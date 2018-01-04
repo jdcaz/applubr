@@ -17,8 +17,13 @@ init python:
     charTextColor["Justin"] = "#c8ffc8"
     charTextColor["Sunny"] = "#c8ffc8"
 
-    
+# Set debug mode    
 define config.developer = True
+
+# Game constants
+define REGEN_RATE = 1
+define DECAY_RATE = 1
+define HEAL_RATE = 1
 
 define P = DynamicCharacter("playername", color=charTextColor["Player"])
 define N = Character('Narrator', color=charTextColor["Narrator"])
@@ -32,12 +37,10 @@ define S = Character('Sunny', color=charTextColor["Sunny"])
 
 call createImageSets
 
-
     
 label after_load:
     return
     
-
 
 # The game starts here.
 

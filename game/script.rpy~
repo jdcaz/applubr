@@ -1,4 +1,4 @@
-﻿# The script of the game goes in this file.
+﻿ls# The script of the game goes in this file.
 
 # Declare characters used by this game. The color argument colorizes the
 # name of the character.
@@ -124,7 +124,7 @@ label start:
     if not lname: 
         $ lname = "Smith"
     
-    $ Player = cl_character(0, fname, lname, playerSex, charList, fightTypes)
+    $ Player = Character(0, fname, lname, playerSex, charList, fightTypes)
     
     hide protagSelect
     N "Good, your name is [Player.fname] [Player.lname]"

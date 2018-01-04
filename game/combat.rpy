@@ -1,84 +1,221 @@
 init python:
     
-    class FightModule:
-        def __init__(self, fighter1, fighter2, fightType, outfit, rules):
-            self.fighter1 = figher1
-            self.fighter2 = fighter2
-            self.fightType = fightType
-            self.damage = 0
-            self.target = ""
-            self.position = ""
-            self.fightType = fightType
-            if fightType == "Catfight":
-                self.fightModule = CatfightModule()
-            elif fightType == "Boxing":
-                self.fightModule = BoxingModule()
-            elif fightType == "Titfight":
-                self.fightModule = TitfightModule()
-            elif fightType == "Sexfight":
-                self.fightModule = SexfightModule()
-            elif fightType == "Wrestling":
-                self.fightModule = WrestlingModule()
-            elif fightType == "Sreetfight":
-                self.fightModule = StreetFightModule()
-                            
-        def calculateInitiative(self):
-            f1init = fighter1.stats.speed + getattr(self.fighter1.fighterData, self.fightType)
-            f2init = fighter2.stats.speed + getattr(self.fighter1.fighterData, self.fightType)
-            total = f1init + f2init
-            roll = renpy.random.randint(1, total)
-            if roll < f1init:
-                return 1
-           else:
-               return 2
-             
-         def evaluateDamage(self, damage, fighter1, target):
-             
-         def calculateInjury(self):
-             
-         def incrementRage(self):
-                
-         def getPosition(self):
-             
-         def fightStatus(self):
-             
-         def changeFightType(self):
+    HEALTH_SCALE = 5
+    ENERGY_SCALE = 8
     
-        def evalAudienceReaction(self):
+    class FightModule:
+        def __init__(self, fighterList, fightType, outfit, rules, location):
+            self.fighterList = fighterList
+            self.fightType = fightType
+            self.fightType = fightType
+            self.audienceEnergy = 0
+            for fighter in self.fighterList:
+                self.audienceEnergy += fighter.stats.fame
+                
+            if fightType == "Catfight":
+                self.fightModule = CatfightModule(fighter1, fighter2, outfit, rules,  location)
+            elif fightType == "Boxing":
+                self.fightModule = BoxingModule(fighter1, fighter2, outfit, rules,  location)
+            elif fightType == "Titfight":
+                self.fightModule = TitfightModule(fighter1, fighter2, outfit, rules,  location)
+            elif fightType == "Sexfight":
+                self.fightModule = SexfightModule(fighter1, fighter2, outfit, rules,  location)
+            elif fightType == "Wrestling":
+                self.fightModule = WrestlingModule(fighter1, fighter2, outfit, rules,  location)
+            elif fightType == "Sreetfight":
+                self.fightModule = StreetFightModule(fighter1, fighter2, outfit, rules,  location)
+                
+            initialize_fight_stats()
             
-        def runFIght(self):
+            
+        def initialize_fight_stats():
+            k = 0
+            for fighter in self.fighterList:
+                fighter.fightStats.rage = 0
+                opponentList = self.fighterList[:]
+                for opponent in opponentList.pop(fighter)
+                    fighter.fightStats.opponentHate = getattr(fighter.interRelation, opponent.name).anger
+                    
+                fighter.fightStats.pain = fighter.fighterData.currInjury
+                fighter.fightStats.averagePain = fighter.fightStats.calculate_average_pain()
+                fighter.fightStats.damage = fighter.fighterData.currInjury
+                fighter.fightStats.health = (fighter.stats.endurance + fighter.stats.fitness + fighter.stats.strength/2 - fighter.stats.currInjury) * HEALTH_SCALE
+                fighter.fightStats.energy = (fighter.stats.endurance + fighter.stats.fitness + fighter.stats.strength/2 - fighter.stats.currInjury) * ENERGY_SCALE
+                k += 1
+                
+        def calculateInitiative(self):
+            initList = list()
+            for fighter in self.fighterList:
+                initList.append(fighter1.stats.speed + getattr(self.fighter1.fighterData, self.fightType))
+            total = 0
+            for val in initList:
+                total += val
+            roll = renpy.random.randint(1, total)
+            if roll < initList[0]:
+                return (1, roll)
+           else:
+               return (2, roll-f1init)
              
+        def calculate_damage(self):               
+               
+         def calculate_Injury(self):
              
-    class CatfightModule:
-        def __init__(self, fighter1, fighter2):
-            self.fighter1 = figher1
-            self.fighter2 = fighter2
+         def increment_rage(self):
+                
+         def fight_status(self):
+             
+         def change_fight_type(self):
+    
+        def eval_audience_reaction(self):
+            self.audienceEnergy
+            
+        def do_face_off(self):
+            self.fightModule.face_off()
+            
+        def run_turn(self):
+            self.fightModule.run_turn()
+            calculate_damage()
+            calculate_injury()
+            increment_rage()
+            get_position()
+            if self.fightModule.changeFightType[0] = 1:
+                change_fight_type()
+            eval_audience_reaction()
+            
+        def do_finish(self):
+             self.fightModule.do_finish()
 
+             
     class BoxingModule:
         def __init__(self, fighter1, fighter2):
             self.fighter1 = figher1
             self.fighter2 = fighter2
+            self.outfit = outfit
+            self.rules = rules
+            self.location = location
+            self.momentum = 0
+            self.prevmomentum = 0
+            self.attackResult = [0,"",0,0] # Target fighter, body part, damage, attacker energy drain
+            self.dialogList = list()
+
              
+        def evaluateDamage(self, damage, fighter1, target):
+             
+        def face_off(self):
+            self.
+            
+        def run_turn(self):
+            
+        def do_finish(self):
+
+        def update_position(self):
+             
+            
     class TitfightModule:
-        def __init__(self, fighter1, fighter2):
+        def __init__(self, fighter1, fighter2, outfit, rules,  location):
             self.fighter1 = figher1
             self.fighter2 = fighter2
+            self.outfit = outfit
+            self.rules = rules
+            self.location = location
+            self.momentum = 0
+            self.prevmomentum = 0
+            self.attackResult = [0,"",0,0]
+
              
+        def evaluateDamage(self, damage, fighter1, target):
+             
+        def face_off():
+            
+        def run_turn():
+            
+        def do_finish():
+
+            
+    class CatfightModule:
+        def __init__(self, fighter1, fighter2, outfit, rules,  location):
+            self.fighter1 = figher1
+            self.fighter2 = fighter2
+            self.outfit = outfit
+            self.rules = rules
+            self.location = location
+            self.momentum = 0
+            self.prevmomentum = 0
+            self.attackResult = [0,"",0,0] # Target fighter, body part, damage, attacker energy drain
+
+
+        def evaluateDamage(self, damage, fighter1, target):
+         
+        def face_off():
+            
+        def run_turn():
+            
+        def do_finish():
+
+            
     class SexfightModule:
-        def __init__(self, fighter1, fighter2):
+        def __init__(self, fighter1, fighter2, outfit, rules,  location):
             self.fighter1 = figher1
             self.fighter2 = fighter2
+            self.outfit = outfit
+            self.rules = rules
+            self.location = location
+            self.momentum = 0
+            self.prevmomentum = 0
+            self.attackResult = [0,"",0,0]
+
              
+        def evaluateDamage(self, damage, fighter1, target):
+             
+        def face_off():
+            
+        def run_turn():
+            
+        def do_finish():
+
+            
     class WrestlingModule:
-        def __init__(self, fighter1, fighter2):
+        def __init__(self, fighter1, fighter2, outfit, rules,  location):
             self.fighter1 = figher1
             self.fighter2 = fighter2
+            self.outfit = outfit
+            self.rules = rules
+            self.location = location
+            self.momentum = 0
+            self.prevmomentum = 0
+            self.attackResult = [0,"",0,0]
+
              
+        def evaluateDamage(self, damage, fighter1, target):
+             
+        def face_off():
+            
+        def run_turn():
+            
+        def do_finish():
+
+            
     class StreetFightModule:
-        def __init__(self, fighter1, fighter2):
+        def __init__(self, fighter1, fighter2, outfit, rules,  location):
             self.fighter1 = figher1
             self.fighter2 = fighter2
+            self.outfit = outfit
+            self.rules = rules
+            self.location = location
+            self.momentum = 0
+            self.prevmomentum = 0
+            self.attackResult = [0,"",0,0]
+
              
+        def evaluateDamage(self, damage, fighter1, target):
+             
+        def face_off():
+            
+        def run_turn():
+            
+        def do_finish():
+
+            
 label calculateAveragePain:
     $ actor.fighterData.averagePain = (actor.fighterData.averagePain.head + actor.fighterData.averagePain.face + actor.fighterData.averagePain.neck + actor.fighterData.averagePain.arms + actor.fighterData.averagePain.back + actor.fighterData.averagePain.boobs*2 + actor.fighterData.averagePain.pussy*2 + actor.fighterData.averagePain.legs)/10
     return

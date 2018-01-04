@@ -50,9 +50,6 @@ init python:
          def __init__(self, fightTypes):
              self.dirtyFighter = 0
              self.readyToFight = True
-             self.averagePain = 0
-             self.currInjury = 0
-             self.totalInjury = 0
              for tuple  in fightTypes:
                  setattr(self, tuple[0], FightRecords())
 
@@ -77,7 +74,9 @@ init python:
              self.speed = 5
              self.charisma = 5
              self.sexperience = 5
-             self.ap = 50
+             self.fame = 0
+             self.currInjury = 0
+             self.totalInjury = 0
             
          
     class GeneralValues:
@@ -162,6 +161,21 @@ init python:
                         if character in self.sexValues.groupSexList:
                             self.sexValues.groupSexList.pop(character)
         
+        def run_end_of_day(self):
+            recover()
+            update_relations()
+
+        def update_injury_count(self):
+            total = 0 
+            for key, val in self.fightStats.__dict__.iteritems():
+                total += val
+            self.stats.currInjury = total
+            
+        def recover():
+        
+        def update_relations():
+            
+            
            # darkhound1 code
             self.relationshipType = 0  
             self.introduced = False

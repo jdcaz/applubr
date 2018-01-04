@@ -1,6 +1,21 @@
 init python:
 
-    class cl_fightRecords:
+    class BodyParts:
+        def __init__(self):
+            self.head = 0
+            self.face = 0
+            self.neck = 0
+            self.lArm = 0
+            self.rArm = 0
+            self.back = 0
+            self.lBoob = 0
+            self.rBoob = 0
+            self.pussy = 0
+            self.lLeg = 0
+            self.rLeg = 0
+
+            
+    class FightRecords:
         def __init__(self):
             self.skill = 0
             self.standing = 0
@@ -8,45 +23,38 @@ init python:
             self.loss = 0
             self.humil = 0
             self.revenge = 0
-            self.injury = 0
+            self.injury = BodyParts()
             self.champion = 0
             self.currChampion = False
             
-
             
-    class cl_bodyParts:
-        def __init__(self):
-            self.head = 0
-            self.face = 0
-            self.neck = 0
-            self.arms = 0
-            self.back = 0
-            self.boobs = 0
-            self.pussy = 0
-            self.legs = 0
-
-    class cl_fightFields:
+    class FightStats:
         def __init__(self):
             self.health = 0
             self.energy = 0
             self.rage = 0
             self.opponentHate = 0
-            self.pain = cl_bodyParts()
-            self.damage = cl_bodyParts()
+            self.pain = BodyParts()
+            self.averagePain = self.calculate_average_pain()
+            self.damage = BodyParts()
             
+        def calculate_average_pain(self):
+            k = 0
+            total = 0
+            for key, val in self.pain.__dict__.iteritems():
+                total += val
+                k += 1
+           return total/float(k)
             
-    class cl_fighterData:
+    class FighterData:
          def __init__(self, fightTypes):
              self.dirtyFighter = 0
              self.readyToFight = True
-             self.averagePain = 0
-             self.currInjury = 0
-             self.totalInjury = 0
              for tuple  in fightTypes:
-                 setattr(self, tuple[0], cl_fightRecords())
+                 setattr(self, tuple[0], FightRecords())
 
 
-    class cl_bodyStats:
+    class BodyStats:
         def __init__(self, sex):
              self.weight = 180
              self.bodyType = 0          # 0, 1, 2, 3: normal, athletic, voluptous, out of shape 
@@ -58,17 +66,20 @@ init python:
                 self.breastType = 1     # 0, 1, 2: Soft, heavy, dense
                 
 
-    class cl_stats:
+    class CharacterStats:
         def __init__(self):
              self.strength = 5
              self.fitness = 5
              self.endurance = 5
+             self.speed = 5
              self.charisma = 5
              self.sexperience = 5
              self.ap = 50
+             self.currInjury = 0
+             self.totalInjury = 0
             
          
-    class cl_generalValues:
+    class GeneralValues:
         def __init__(self):
             self.confidence = 5
             self.confidenceMax = 30
@@ -78,30 +89,28 @@ init python:
             self.moodMax = 30
             
             
-    class cl_sexValues:
+    class SexValues:
         def __init__(self):
             self.orientation = 0 # 0, 1, 2: bi, hetero, homo 
             self.orgasm = 0
             self.orgasmMax = 30
             self.arousal = 0
             self.exhibitionist = 0
-            self.exhibitionistMax = 30            
+            self.exhibitionistMax = 30
             self.groupSexEnabled = False
-            self.groupSexList = []
+            self.groupSexList = []        
         
-        
-
             
-    class cl_interRelation: 
+    class InterRelationStats: 
         def __init__(self, charList):
             for name in charList:
-                 setattr(self, name, cl_interRelationValues)
+                 setattr(self, name, InterRelationStatsValues)
                  
         def __iter__(self):
-            for attr, value in self.__dict__iteritems():
+            for attr, value in self.__dict__.iteritems():
                 yield attr
 
-    class cl_interRelationValues:
+    class InterRelationStatsValues:
         def __init__(self):
             self.attraction = 0    
             self.attractionMax = 20
@@ -114,7 +123,7 @@ init python:
             self.lastFight = ""
 
             
-    class cl_character:
+    class CharacterContainer:
         def __init__(self, id, fname, lname, sex, charList, fightTypes):
             self.id = id
             if id == 0:
@@ -124,23 +133,50 @@ init python:
             self.active = True
             self.fname = fname
             self.lname = lname
-            self.sex = sex  
+            self.sex = sex
             self.textColor = "#c8ffc8"
             self.clothes = ""
             self.worksForPlayer = False
             
             self.location = ""
 
-            self.generalValues = cl_generalValues()
-            self.stats = cl_stats()
-            self.bodyStats = cl_bodyStats(sex)
-            self.sexValues = cl_sexValues()
+            self.generalValues = GeneralValues()
+            self.stats = CharacterStats()
+            self.bodyStats = BodyStats(sex)
+            self.sexValues = SexValues()
             
-            self.interRelation = cl_interRelation(charList)
+            self.interRelation = InterRelationStats(charList)
                 
             if sex == "f":
-                self.fighterData = cl_fighterData(fightTypes)
+                self.fighterData = FighterData(fightTypes)
+
+        def group_sex_update(self):
+            for character in dict(self.interRelation):
+                if not character  == "Player":
+                    if self.interRelation.character.attraction > 10:
+                        self.sexValues.groupSex = True
+                        if character not in self.sexValues.groupSexList:
+                            self.sexValues.groupSexList.append((character, character))
+                    else:
+                        if character in self.sexValues.groupSexList:
+                            self.sexValues.groupSexList.pop(character)
+        
+        def run_end_of_day(self):
+            recover()
+            update_relations()
+
+        def update_injury_count(self):
+            total = 0 
+            for key, val in self.fightStats.__dict__.iteritems():
+                total += val
+            self.stats.currInjury = total
             
+        def recover():
+        
+        def update_relations():
+            
+            
+           # darkhound1 code
             self.relationshipType = 0  
             self.introduced = False
 
@@ -153,18 +189,8 @@ init python:
             self.appointments_seen = []
             self.scenes_avaialable = []
             self.scenes_seen = []
-        
-        def groupSexUpdate(self):
-            for character in dict(self.interRelation):
-                if not character  == "Player":
-                    if self.interRelation.character.attraction > 10:
-                        self.sexValues.groupSex = True
-                        if character not in self.sexValues.groupSexList:
-                            self.sexValues.groupSexList.append((character, character))
-                    else:
-                        if character in self.sexValues.groupSexList:
-                            self.sexValues.groupSexList.pop(character)
-        
+
+        # darkhound1 code 
         def init_pl_interactions(self):
             self.list_of_pl_int_day = []
             self.list_of_pl_int_week = []
@@ -261,7 +287,7 @@ init python:
             
             return True            
         
-        
+        # darkhound1 code
         def add_pl_interaction(self, i_name):
             counter = 0
             while counter < len(self.list_of_pl_int_day):
@@ -283,7 +309,7 @@ init python:
                 counter += 1 
             return True
         
-        
+        # darkhound1 code        
         def get_total_interactions_today(self):
             l_count = 0
             counter = 0
@@ -293,6 +319,7 @@ init python:
             return l_count
         
         
+        # darkhound1 code        
         def get_total_interactions_week(self):
             l_count = 0
             counter = 0
@@ -302,6 +329,7 @@ init python:
             return l_count            
         
         
+        # darkhound1 code        
         def init_interactions_today(self):
             counter = 0
             while counter < len(self.list_of_pl_int_day):
@@ -310,6 +338,7 @@ init python:
             return True
         
         
+        # darkhound1 code        
         def init_interactions_week(self):
             counter = 0
             while counter < len(self.list_of_pl_int_week):
@@ -318,6 +347,7 @@ init python:
             return True            
         
         
+        # darkhound1 code        
         def add_phone_image(self, i_image_number, i_make_default = True):
             if not renpy.loadable("phone/phone_" + self.fname.lower() + str(i_image_number) + "_hover.png"):
                 return False
@@ -330,6 +360,7 @@ init python:
             return True
         
         
+        # darkhound1 code        
         def create_message(self, i_pool_id, i_ap, i_tomorrow = False):
             l_message_pool = gl_message_pool[i_pool_id]
             l_appointment_pool = gl_appointment_pool[l_message_pool.appointment_pool_id]
@@ -339,6 +370,7 @@ init python:
             return l_message
         
         
+        # darkhound1 code        
         def get_action_icon_available(self, i_action):
             if i_action == "workout_pecs":
                 if renpy.loadable("scenes/" + self.fname + "/" + self.fname + "_workout_pecs0a_swim" + str(self.swimwear) + ".jpg" ):
@@ -368,6 +400,7 @@ init python:
             return False
         
         
+        # darkhound1 code        
         def get_action_allowed(self, i_name):
             for l_action in self.action_cooldwon_list:
                 if l_action.name == i_name:
@@ -375,6 +408,7 @@ init python:
             return True
         
         
+        # darkhound1 code        
         def get_action_not_allowed_text(self, i_name):            
             for l_action in self.action_cooldwon_list:
                 if l_action.name == i_name:
@@ -382,12 +416,14 @@ init python:
             return ""
         
         
+        # darkhound1 code        
         def add_action_cooldown(self, i_name, i_ap_cooldown, i_text):
             l_new_action_cooldown = cl_action_cooldown(i_name, i_ap_cooldown, i_text)
             self.action_cooldwon_list.append(l_new_action_cooldown)
             return True
         
         
+        # darkhound1 code        
         def adjust_action_cooldown_timer(self, i_ap):
             for l_action in self.action_cooldwon_list:
                 l_action.ap_cooldown -= i_ap
@@ -395,6 +431,7 @@ init python:
                     self.action_cooldwon_list.remove(l_action)
         
         
+        # darkhound1 code        
         def create_topics_list(self):
             balance = 0   
             inclination = renpy.random.choice([-1, -1, 0, 1, 1])
@@ -463,6 +500,7 @@ init python:
                         counter += 1
         
         
+        # darkhound1 code        
         def get_last_topic_results(self, i_name):
             for topic in self.topics_list:
                 if topic.name == i_name:
@@ -472,6 +510,7 @@ init python:
                         return ""
         
         
+        # darkhound1 code        
         def add_last_topic_result(self, i_name, i_result):
             if i_result == 0:
                 l_result = "0"
@@ -488,6 +527,7 @@ init python:
                     topic.talk_again_timer = 8
         
         
+        # darkhound1 code        
         def get_topic_talk_again(self, i_topic):
             for topic in self.topics_list:
                 if topic.name == i_topic:
@@ -498,12 +538,14 @@ init python:
             return False
         
         
+        # darkhound1 code        
         def get_topic_talk_inclination(self, i_topic):
             for topic in self.topics_list:
                 if topic.name == i_topic:
                     return topic.inclination
         
         
+        # darkhound1 code        
         def adjust_topics_talk_timer(self, i_actionpoints):
             for topic in self.topics_list:
                 if topic.talk_again_timer > 0:
@@ -514,29 +556,28 @@ init python:
         
         
         def get_breast_size_text(self):
-            if self.breast_size == 1:
-                br_random_list = ["breasts", "nice breasts", "chest"]
-            elif self.breast_size == 2:
+            if self.breast_size == 0:
                 br_random_list = ["large breasts", "oversized boobs", "large mounds"]
-            elif self.breast_size == 3:  
+            elif self.breast_size == 1:
                 br_random_list = ["huge breasts",  "amazing breasts", "huge boobs", "huge chest", "huge tits"]
-            elif self.breast_size == 4:
+            elif self.breast_size == 2:
                 br_random_list = ["huge melons", "incredibly huge breasts", "huge knockers", "mounds of pleasure"]            
             return renpy.random.choice(br_random_list) 
         
         
         def get_body_type_text(self):
-            if self.body_type == 1:
+            if self.body_type == 0:
                 br_random_list = ["slim", "delicate", "slender", "graceful"]
-            elif self.body_type == 2:
+            elif self.body_type == 1:
                 br_random_list = ["perfect", "model", "exemplary"]
-            elif self.body_type == 3:  
+            elif self.body_type == 2:  
                 br_random_list = ["fit",  "muscular", "strong", "powerful", "athletic"]
                 return renpy.random.choice(br_random_list)
-            elif self.body_type == 4:
+            elif self.body_type == 3:
                 br_random_list = ["voluptuous", "curvaceous", "well proportioned", "ample"]            
             return renpy.random.choice(br_random_list)             
 
+    # darkhound1 code        
     class cl_actionCooldown:
         def __init__(self, i_name, i_ap_cooldown, i_text):
             self.name = i_name
@@ -544,12 +585,14 @@ init python:
             self.text = i_text
 
 
+    # darkhound1 code        
     class cl_interactionWithPlayer:
         def __init__(self, i_id, i_name): 
             self.id = i_id
             self.name = i_name
             self.count = 0
 
+    # darkhound1 code        
     class cl_topic:
         def __init__(self, i_name, i_inclination):
              self.name = i_name
@@ -561,7 +604,7 @@ init python:
           
 
 label createPlayer:
-    $ Player = cl_character(0, playerFname, playerLname, playerSex, charList, fightTypes)
+    $ Player = CharacterContainer(0, playerFname, playerLname, playerSex, charList, fightTypes)
     return
 
 label createCharacters(charList, fightTypes):
@@ -573,7 +616,7 @@ label createCharacters(charList, fightTypes):
 
     
 label createCindy(charList, fightTypes):
-    $ Cindy = cl_character(1 , "Cindy", "MacGreggor", 'f', charList, fightTypes)
+    $ Cindy = CharacterContainer(1 , "Cindy", "MacGreggor", 'f', charList, fightTypes)
     
     $ Cindy.clothes = "gymClothes"
     $ Cindy.textColor = charTextColor["Cindy"]
@@ -667,7 +710,7 @@ label createCindy(charList, fightTypes):
     return
     
 label createDenisa(charList, fightTypes):
-    $ Denisa = cl_character(1 , "Denissa", "Jones", 'f', charList, fightTypes)
+    $ Denisa = CharacterContainer(1 , "Denissa", "Jones", 'f', charList, fightTypes)
     $ Denisa.textColor = charTextColor["Denisa"]
     
     $ Denisa.generalValues.confidence = 5
@@ -765,7 +808,7 @@ label create_kathy(charList, fightTypes):
     return
     
 label createSunny(charList, fightTypes):
-    $ Sunny = cl_character(1 , "Sunny", "Marcel", 'm', charList, fightTypes)
+    $ Sunny = CharacterContainer(1 , "Sunny", "Marcel", 'm', charList, fightTypes)
     $ Sunny.textColor = charTextColor["Sunny"]
 
     $ Sunny.generalValues.confidence = 5
