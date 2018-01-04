@@ -1,0 +1,640 @@
+init python:
+    actorObj = cl_character(999,"", "", "", [],[])
+
+label setSpeaker(actorObj):
+    define spkr = Character(actorObj.fname, who_color = actorObj.textColor)
+    return spkr
+
+
+label getBoxingAffirmativeText:
+    $ val = renpy.random.randint(0,1)
+    if val == 0:
+        $ textString = "I'll beat [opponent] down!"
+    if val == 1:
+        $ textString = "I'm gonna knock [opponent]'s lights out!"
+    else:
+        $ textString = "Great!"        
+    return textString
+
+label getWrestlingAffirmativeText:
+    $ val = renpy.random.randint(0,1)
+    if val == 0:
+        $ textString = "[opponent] doesn't stand a chance!"
+    if val == 1:
+        $ textString = "[opponent]'ll be on the floor!"
+    else:
+        $ textString = "Great!"        
+    return textString
+    
+label getSexfightAffirmativeText:
+    $ val = renpy.random.randint(0,1)
+    if val == 0:
+        $ textString = "I'm going to fuck [opponent] stupid!"
+    if val == 1:
+        $ textString = "I'll leave [opponent] drooling."
+    else:
+        $ textString = "Great!"        
+    return textString
+    
+label getTitfightAffirmativeText:
+    $ val = renpy.random.randint(0,1)
+    if val == 0:
+        $ textString = "I'll smash [opponent] flat!"
+    if val == 1:
+        $ textString = "[opponent]'s tits don't stand a chance!"
+    else:
+        $ textString = "Great!"        
+    return textString
+    
+label getCatfightAffirmativeText:
+    $ val = renpy.random.randint(0,1)
+    if val == 0:
+        $ textString = "I'm going to fuck [opponent] up!!"
+    if val == 1:
+        $ textString = "[opponent] won't be able to fight or fuck for a week!."
+    else:
+        $ textString = "Great!"        
+    return textString
+    
+label fightSetupDialog(actorObj):
+    $ actorObj.fighterData.readyToFight = False
+    if actorObj.generalValues.mood > 20:
+        $ textString = "Damn straight! Whose ass do I get to kick?"
+        $ actorObj.fighterData.readyToFight = True
+        
+    elif actor.fighterDat.currInjury > 5:
+         $ textString = "I'm still hurt from the last one, you asshole. Pay some attention!"
+         $ actorObj.fighterData.readyToFight = False
+         
+    else:
+        $ textString = "Yeah, sure, I could use a fight."
+        $ actorObj.fighterData.readyToFight = False
+        
+    return textString
+    
+    
+label pickOpponent():
+    python:
+        reducedFighterList = fighterList[:]
+              
+        for tuple  in reducedFighterList:
+            if tuple[0] == actor:
+                reducedFighterList.remove(tuple)
+                        
+    $ opponent = menu(reducedFighterList)
+    return opponent
+
+label checkOpponent():
+    if opponentCount >= 6:
+        return
+    if opponent == "Cindy":
+        if actorObj.interRelation.Cindy.anger < actorObj.interRelation.Cindy.intimidated and actorObj.generalValues.mood < actorObj.interRelation.Cindy.intimidated:
+            $ actorObj.fighterData.readyToFight = False
+            if actorObj.interRelation.Cindy.lastFight not =="":
+                $ textString = "No, I'm not ready to fight [opponent] again, yet."
+                $ opponentCount += 1
+                jump getOpponent
+            else:
+                $ textString = "No, I'm not ready to fight [opponent] just, yet."
+                $ opponentCount += 1
+                jump getOpponent
+            
+        elif actorObj.interRelation.Cindy.anger < actorObj.interRelation.Cindy.intimidated and actorObj.generalValues.mood >= actorObj.interRelation.Cindy.intimidated:
+            $ actorObj.fighterData.readyToFight = True
+            if actorObj.interRelation.Cindy.lastFight not == "":
+                $ textString = "I'm ready to take [opponent] on again!"
+            else:
+                $ textString = "I'm ready to take [opponent] on!"                        
+            
+        elif actorObj.interRelation.Cindy.anger >= actorObj.interRelation.Cindy.intimidated and actorObj.generalValues.mood < actorObj.interRelation.Cindy.intimidated:
+            $ actorObj.fighterData.readyToFight = True
+            $ textString = "I hate that bitch! I want a piece of [opponent]!"
+            
+        else:
+            $ actorObj.fighterData.readyToFight = True
+            if actorObj.interRelation.Cindy.anger > 10:
+                $ textString = "Damn right! I'm ready to get [opponent]!"
+            elif actorObj.interRelation.Cindy.anger > 20:
+                $ textString = "I'm gonna fuck that bitch [opponent] up!"
+            else:
+                $ textString = "I'm ready to fight!"
+                
+    if opponent == "Denisa":
+        $ truthVal1 = (actorObj.interRelation.Denisa.anger < actorObj.interRelation.Denisa.intimidated) and (actorObj.generalValues.mood < actorObj.interRelation.Denisa.intimidated)
+        $ truthVal2 = actorObj.interRelation.Denisa.anger < actorObj.interRelation.Denisa.intimidated and  actorObj.i.generalValues.mood >= actorObj.interRelation.Denisa.intimidated
+        $ truthVal3 =  actorObj.interRelation.Denisa.anger >= actorObj.interRelation.Denisa.intimidated and actorObj.generalValues.mood < actorObj.interRelation.Denisa.intimidated
+        if truthVal1:
+            $ actorObj.fighterData.readyToFight = False
+            if actorObj.interRelation.Denisa.lastFight not =="":
+                $ textString = "No, I'm not ready to fight [opponent] again, yet."
+                $ opponentCount += 1
+                jump getOpponent
+            else:
+                $ textString = "No, I'm not ready to fight [opponent] just, yet."
+                $ opponentCount += 1
+                jump getOpponent
+            
+        elif truthVal2:
+            $ actorObj.fighterData.readyToFight = True
+            if actorObj.interRelation.Denisa.lastFight not == "":
+                $ textString = "I'm ready to take [opponent] on again!"
+                $ opponentOK = True
+            else:
+                $ textString = "I'm ready to take [opponent] on!"
+                $ opponentOK = True                        
+            show Cindy gymClothes confident readyToFight
+
+        elif truthVal3:
+            $ actorObj.fighterData.readyToFight = True
+            $ textString = "I hate that bitch! I want a piece of [opponent]!"
+            $ opponentOK = True
+            show Cindy gymClothes angry readyToFight
+
+        else:
+            $ actorObj.fighterData.readyToFight = True
+            if actorObj.interRelation.Denisa.anger > 10:
+                $ textString = "Damn right! I'm ready to get [opponent]!"
+                $ opponentOK = True
+            elif actorObj.interRelation.Denisa.anger > 20:
+                $ textString = "I'm gonna fuck that bitch [opponent] up!"
+                $ opponentOK = True
+            else:
+                $ textString = "I'm ready to fight!"
+                $ opponentOK = True
+            show Cindy gymClothes confident readyToFight
+
+        if actorObj.fighterData.readyToFight:
+            $ opponentObj = eval(opponent)
+            python:
+                oppAnger = getattr(actorObj.interRelation, opponent).anger
+
+    return textString
+    
+
+label pickFightType:
+    
+    $ fightType = menu(fightTypes)
+
+    return fightType
+
+label checkFightType:
+    if typeCount >= 6:
+        return
+    if fightType == "Boxing":
+        if actorObj.fighterData.Boxing.skill < opponentObj.fighterData.Boxing.skill -3:
+            spkr "I'm not ready to box [opponent] yet."
+            $ typeCount += 1
+            jump pickFightType
+        else:
+            call getBoxingAffirmativeText
+            
+    elif fightType == "Wrestling":
+        if actorObj.fighterData.Wrestling.skill < opponentObj.fighterData.Wrestling.skill -3:
+            spkr "I'm not ready to box [opponent] yet."
+            $ typeCount += 1
+            jump pickFightType
+        else:
+            call getWrestlingAffirmativeText
+            
+    elif fightType == "Sexfight":
+        if actorObj.fighterData.Sexfight.skill < opponentObj.fighterData.Sexfight.skill -3:
+            spkr "I'm not ready to sexfight [opponent] yet."
+            $ typeCount += 1
+            jump pickFightType
+        else:
+            call getSexfightAffirmativeText
+            
+    elif fightType == "Titfight":
+        if actorObj.fighterData.Wrestling.skill < opponentObj.fighterData.Wrestling.skill -3:
+            spkr "I'm not ready to titfight [opponent] yet."
+            $ typeCount += 1
+            jump pickFightType
+        else:
+            call getTitfightAffirmativeText
+            
+    elif fightType == "Catfight":
+        if actorObj.fighterData.Wrestling.skill < opponentObj.fighterData.Wrestling.skill -3:
+            spkr "I'm not ready to catfight [opponent] yet."
+            $ typeCount += 1
+            jump pickFightType
+        else:
+            call getCatfightAffirmativeText
+            
+    $ typeOK = True
+    return textString
+    
+label getAttire:
+    
+    $ fightAttire = menu(fightAttires)
+    
+    return fightAttire
+    
+label checkAttire():
+    if attireCount >= 6:
+        return
+    if fightType == "Boxing":
+        if fightAttire == "Normal":
+            $ textString =  "Suits me."
+
+        elif fightAttire == "Normal, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+            
+        elif fightAttire == "Underwear":
+            if actorObj.sexValues.exhibitionist < 5:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+                
+        elif fightAttire == "Underwear, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+                
+        elif fightAttire == "Nude":
+            if actorObj.sexValues.exhibitionist < 15:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Good, I don't want anything in the way!"
+
+    elif fightType == "Wrestling":
+        if fightAttire == "Normal":
+            $ textString =  "Suits me."
+
+        elif fightAttire == "Normal, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+            
+        elif fightAttire == "Underwear":
+            if actorObj.sexValues.exhibitionist < 5:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+                
+        elif fightAttire == "Underwear, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+                
+        elif fightAttire == "Nude":
+            if actorObj.sexValues.exhibitionist < 15:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Good, I don't want anything in the way!"
+
+            
+    elif fightType == "Titfight":
+        if fightAttire == "Normal":
+            spkr "For a titfight?"
+            $ attireCount += 1
+            jump getAttire
+
+        elif fightAttire == "Normal, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+            
+        elif fightAttire == "Underwear":
+            if actorObj.sexValues.exhibitionist < 5:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "For a titfight?"
+                $ attireCount += 1
+                jump getAttire
+                
+        elif fightAttire == "Underwear, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+                
+        elif fightAttire == "Nude":
+            if actorObj.sexValues.exhibitionist < 15:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Good, I don't want anything in the way!"
+
+            
+    elif fightType == "Sexfight":
+        if fightAttire == "Normal":
+            spkr "For a sexfight?"
+            $ attireCount += 1
+            jump getAttire
+
+        elif fightAttire == "Normal, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+            
+        elif fightAttire == "Underwear":
+            if actorObj.sexValues.exhibitionist < 5:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+                
+        elif fightAttire == "Underwear, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+                
+        elif fightAttire == "Nude":
+            if actorObj.sexValues.exhibitionist < 15:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Good, I don't want anything in the way!"
+
+            
+    elif fightType == "Catfight":
+        if fightAttire == "Normal":
+            $ textString =  "Suits me."
+
+        elif fightAttire == "Normal, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+            
+        elif fightAttire == "Underwear":
+            if actorObj.sexValues.exhibitionist < 5:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+                
+        elif fightAttire == "Underwear, topless":
+            if actorObj.sexValues.exhibitionist < 10:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Suits me."
+                
+        elif fightAttire == "Nude":
+            if actorObj.sexValues.exhibitionist < 15:
+                spkr "I'm not ready for that yet."
+                $ attireCount += 1
+                jump getAttire
+            else:
+                $ textString = "Good, I don't want anything in the way!"
+
+        $ attireOK = True
+    return textString
+    
+label getRules:
+    if fightType == "Boxing":
+        $ fightRules = menu(boxingRules)
+        
+    elif fightType == "Wrestling":
+        $ fightRules = menu(wrestlingRules)
+        
+    elif fightType == "Sexfight":
+        $ fightRules = menu(sexfightRules)
+        
+    elif fightType == "Titfight":
+        $ fightRules = menu(titfightRules)
+        
+    elif fightType == "Catfight":
+        $ fightRules = menu(catfightRules)
+
+    return fightRules
+    
+label checkRules ():
+    if rulesCount >= 6:
+        return
+    if fightType == "Boxing":
+        if fightRules == "Gloves":
+            $ textString = "Suits me."
+
+        elif fightRules == "Gloves, no rules":
+            if oppAnger > 5:
+                $ textString = "I like the sound of that."
+            else:
+                spkr "Maybe not..."
+                $ rulesCount += 1
+                jump getRules
+                        
+        elif fightRules == "Bare knuckle":
+            if oppAnger > 5:
+                $ textString = "I like the sound of that."
+            else:
+                spkr "Maybe not..."
+                $ rulesCount += 1
+                jump getRules
+                
+        elif fightRules == "Bare knuckle, no rules":
+            if oppAnger > 10:
+                $ textString = "I wanted a chance to hurt [opponent]!"
+            else:
+                spkr "Maybe not..."
+                $ rulesCount += 1
+                jump getRules
+        
+    elif fightType == "Wrestling":
+        if fightRules == "Normal":
+            $ textString = "Suits me."
+        elif fightRules == "Submission only":
+            if oppAnger > 5:
+                $ textString = "Good, I want [opponent] to hurt!"
+            else:
+                spkr "Maybe not..."
+                $ rulesCount += 1
+                jump getRules
+        elif fightRules == "Sexual submission only":
+            if oppAnger > 5:
+                $ textString = "I want [opponent] begging for more!"
+            else:
+                spkr "Maybe not..."
+                $ rulesCount += 1
+                jump getRules
+                
+        elif fightRules == "No holds barred":
+            if oppAnger > 10:
+                $ textString = "I wanted a chance to hurt [opponent]!"
+            else:
+                spkr "Maybe not..."
+                $ rulesCount += 1
+                jump getRules
+        
+    elif fightType == "Sexfight":
+        if fightRules == "Sex only":
+            $ textString = "Suits me."
+        elif fightRules == "No rules":
+            if oppAnger > 10:
+                $ textString = "Fuck [opponent] and hurt her? Sounds perfect!"
+            else:
+                spkr "Maybe not..."
+                $ rulesCount += 1
+                jump getRules
+        
+    elif fightType == "Titfight":
+        if fightRules == "Tits only":
+            $ textString = "Suits me."
+        elif fightRules == "No rules":
+            if oppAnger > 10:
+                $ textString = "Good, I want to crush [opponent]'s tits!"
+            else:
+                spkr "Maybe not..."
+                $ rulesCount += 1
+                jump getRules
+        
+    elif fightType == "Catfight":
+        if fightRules == "Rules":
+            $ textString = "Suits me."
+        elif fightRules == "No rules":
+            if oppAnger > 15:
+                $ textString = "I'm going to break [opponent]!"
+            else:
+                spkr "Maybe not..."
+                $ rulesCount += 1
+                jump getRules
+
+    $ rulesOK = True
+    return textString
+    
+label convSetUpFight:
+    $ option0 = False
+    call fightSetupDialog (actorObj)
+    $ textString = _return
+    
+    spkr " %(textString)s "
+    
+    if actorObj.fighterData.readyToFight:
+        call pickOpponent ()
+        $ opponent = _return
+        $ opponentObj = eval(opponent)
+        $ opponentOK = False
+        $ opponentCount = 0
+        while not opponentOK and opponentCount < 6:
+            call checkOpponent ()
+            
+        if opponentCount >= 6:
+            spkr "You're just wasting my time"
+            return
+        spkr " %(textString)s "
+        
+        if not actorObj.fighterData.readyToFight:
+            return
+        
+        spkr "What kind of fight are you looking for?"
+        call pickFightType
+        $ fightType = _return
+        $ typeOK = False
+        $ typeCount = 0
+        while not typeOK and typeCount < 6:
+            call checkFightType ()
+        if typeCount >= 6:
+            spkr "You're just wasting my time"
+            return
+        $ textString = _return
+        spkr " %(textString)s "
+        
+        spkr "All right, what are the rules going to be?"
+        
+        call getRules
+        $ fightRules = _return
+        $ rulesOK = False
+        $ rulesCount = 0
+        while not rulesOK and rulesCount < 6:
+            call checkRules ()
+        if rulesCount >= 6:
+            spkr "You're just wasting my time"
+            return
+        $ textString = _return
+    
+        spkr " %(textString)s "
+        
+        spkr "And what will we be wearing?"
+        
+        call getAttire
+        $ fightAttire = _return
+        $ attireOK = False
+        $ attireCount = 0
+        while not attireOK and attireCount < 6:
+            call checkAttire ()
+        if attireCount >= 6:
+            spkr "You're just wasting my time"
+            return
+        $ textString = _return
+        spkr " %(textString)s "
+    return
+    
+
+    
+label setUpDate:
+    $ option2 = False
+    return
+    
+
+label generalConversation(actorObj):
+    call setSpeaker(actorObj)
+    A "Test me here"
+    $ option0 = True
+    $ option1 = True
+    $ option2 = True
+    $ option3 = True
+    $ option4 = True
+    $ option5 = True
+    $ option6 = True
+    
+    A "Test me here"
+    label genConMenu:
+    menu:
+        "I'd like to set up a fight." if option0 and actorObj.fighterData.currInjury == 0 and actorObj.worksForPlayer:
+            call convSetUpFight
+        "It's time to do some training." if option1 and actorObj.worksForPlayer:
+            call doTraining
+        "It depends, what are you up to later?" if option2 and actorObj.interRelation.Player.attraction > 5:
+            call setUpDate
+        "Oh, I have something else in mind..." if option3 and actorObj.interRelation.Player.attraction > 15:
+            call sexDialog
+        
+    
+                
+    return
+    
+    
+

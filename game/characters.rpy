@@ -1,0 +1,836 @@
+init python:
+
+    class BodyParts:
+        def __init__(self):
+            self.head = 0
+            self.face = 0
+            self.neck = 0
+            self.lArm = 0
+            self.rArm = 0
+            self.back = 0
+            self.lBoob = 0
+            self.rBoob = 0
+            self.pussy = 0
+            self.lLeg = 0
+            self.rLeg = 0
+
+            
+    class FightRecords:
+        def __init__(self):
+            self.skill = 0
+            self.standing = 0
+            self.win = 0
+            self.loss = 0
+            self.humil = 0
+            self.revenge = 0
+            self.injury = BodyParts()
+            self.champion = 0
+            self.currChampion = False
+            
+            
+    class FightStats:
+        def __init__(self):
+            self.health = 0
+            self.energy = 0
+            self.rage = 0
+            self.opponentHate = 0
+            self.pain = BodyParts()
+            self.averagePain = self.calculate_average_pain()
+            self.damage = BodyParts()
+            
+        def calculate_average_pain(self):
+            k = 0
+            total = 0
+            for key, val in self.pain.__dict__.iteritems():
+                total += val
+                k += 1
+           return total/float(k)
+            
+    class FighterData:
+         def __init__(self, fightTypes):
+             self.dirtyFighter = 0
+             self.readyToFight = True
+             self.averagePain = 0
+             self.currInjury = 0
+             self.totalInjury = 0
+             for tuple  in fightTypes:
+                 setattr(self, tuple[0], FightRecords())
+
+
+    class BodyStats:
+        def __init__(self, sex):
+             self.weight = 180
+             self.bodyType = 0          # 0, 1, 2, 3: normal, athletic, voluptous, out of shape 
+             self.heightType = 0         # 0, 1, 2 : short, normal, tall
+             if sex == "m":
+                self.cockSize = 0       # 0, 1, 2 big, huge, enormous
+             elif sex == "f":
+                self.breastSize = 0      # 0, 1, 2: big, huge, enormous
+                self.breastType = 1     # 0, 1, 2: Soft, heavy, dense
+                
+
+    class CharacterStats:
+        def __init__(self):
+             self.strength = 5
+             self.fitness = 5
+             self.endurance = 5
+             self.speed = 5
+             self.charisma = 5
+             self.sexperience = 5
+             self.ap = 50
+            
+         
+    class GeneralValues:
+        def __init__(self):
+            self.confidence = 5
+            self.confidenceMax = 30
+            self.fame = 0
+            self.money = 500
+            self.mood = 25
+            self.moodMax = 30
+            
+            
+    class SexValues:
+        def __init__(self):
+            self.orientation = 0 # 0, 1, 2: bi, hetero, homo 
+            self.orgasm = 0
+            self.orgasmMax = 30
+            self.arousal = 0
+            self.exhibitionist = 0
+            self.exhibitionistMax = 30
+            self.groupSexEnabled = False
+            self.groupSexList = []        
+        
+            
+    class InterRelationStats: 
+        def __init__(self, charList):
+            for name in charList:
+                 setattr(self, name, InterRelationStatsValues)
+                 
+        def __iter__(self):
+            for attr, value in self.__dict__.iteritems():
+                yield attr
+
+    class InterRelationStatsValues:
+        def __init__(self):
+            self.attraction = 0    
+            self.attractionMax = 20
+            self.anger = 0
+            self.angerMax = 20
+            self.intimidated = 0
+            self.intimidatedMax = 20
+            self.favors = 0
+            self.favorsMax = 20
+            self.lastFight = ""
+
+            
+    class CharacterContainer:
+        def __init__(self, id, fname, lname, sex, charList, fightTypes):
+            self.id = id
+            if id == 0:
+                self.gameEvents = cl_gameEvents()
+                self.gameEvents.setGameEvents()
+
+            self.active = True
+            self.fname = fname
+            self.lname = lname
+            self.sex = sex
+            self.textColor = "#c8ffc8"
+            self.clothes = ""
+            self.worksForPlayer = False
+            
+            self.location = ""
+
+            self.generalValues = GeneralValues()
+            self.stats = CharacterStats()
+            self.bodyStats = BodyStats(sex)
+            self.sexValues = SexValues()
+            
+            self.interRelation = InterRelationStats(charList)
+                
+            if sex == "f":
+                self.fighterData = FighterData(fightTypes)
+
+        def group_sex_update(self):
+            for character in dict(self.interRelation):
+                if not character  == "Player":
+                    if self.interRelation.character.attraction > 10:
+                        self.sexValues.groupSex = True
+                        if character not in self.sexValues.groupSexList:
+                            self.sexValues.groupSexList.append((character, character))
+                    else:
+                        if character in self.sexValues.groupSexList:
+                            self.sexValues.groupSexList.pop(character)
+        
+           # darkhound1 code
+            self.relationshipType = 0  
+            self.introduced = False
+
+            self.phone_image = 0
+            self.list_of_phone_images = [0]
+
+            self.events_available = []
+            self.events_seen = []
+            self.appointments_avaialable = []
+            self.appointments_seen = []
+            self.scenes_avaialable = []
+            self.scenes_seen = []
+
+        # darkhound1 code 
+        def init_pl_interactions(self):
+            self.list_of_pl_int_day = []
+            self.list_of_pl_int_week = []
+            self.list_of_pl_int_total = []
+            
+            l_interaction_d = cl_interaction_with_player(0, "tease_boobs")
+            l_interaction_w = cl_interaction_with_player(0, "tease_boobs")
+            l_interaction_t = cl_interaction_with_player(0, "tease_boobs")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)
+            
+            l_interaction_d = cl_interaction_with_player(1, "tease_ass")
+            l_interaction_w = cl_interaction_with_player(1, "tease_ass")
+            l_interaction_t = cl_interaction_with_player(1, "tease_ass")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)
+            
+            l_interaction_d = cl_interaction_with_player(2, "tease_body")
+            l_interaction_w = cl_interaction_with_player(2, "tease_body")
+            l_interaction_t = cl_interaction_with_player(2, "tease_body")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)
+            
+            l_interaction_d = cl_interaction_with_player(3, "tease_talk")
+            l_interaction_w = cl_interaction_with_player(3, "tease_talk")
+            l_interaction_t = cl_interaction_with_player(3, "tease_talk")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)
+            
+            l_interaction_d = cl_interaction_with_player(4, "tease_pussy")
+            l_interaction_w = cl_interaction_with_player(4, "tease_pussy")
+            l_interaction_t = cl_interaction_with_player(4, "tease_pussy")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)
+            
+            l_interaction = cl_interaction_with_player(5, "tease_masturbate")
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t) 
+            
+            l_interaction_d = cl_interaction_with_player(6, "titfuck")
+            l_interaction_w = cl_interaction_with_player(6, "titfuck")
+            l_interaction_t = cl_interaction_with_player(6, "titfuck")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)
+            
+            l_interaction_d = cl_interaction_with_player(8, "blowjob")
+            l_interaction_w = cl_interaction_with_player(8, "blowjob")
+            l_interaction_t = cl_interaction_with_player(8, "blowjob")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t) 
+            
+            l_interaction_d = cl_interaction_with_player(9, "sex")
+            l_interaction_w = cl_interaction_with_player(9, "sex")
+            l_interaction_t = cl_interaction_with_player(9, "sex")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t) 
+            
+            l_interaction_d = cl_interaction_with_player(10, "lesbian")
+            l_interaction_w = cl_interaction_with_player(10, "lesbian")            
+            l_interaction_t = cl_interaction_with_player(10, "lesbian")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)
+            
+            l_interaction_d = cl_interaction_with_player(11, "others")
+            l_interaction_w = cl_interaction_with_player(11, "others")
+            l_interaction_t = cl_interaction_with_player(11, "others")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)               
+            
+            l_interaction_d = cl_interaction_with_player(12, "kiss")
+            l_interaction_w = cl_interaction_with_player(12, "kiss")
+            l_interaction_t = cl_interaction_with_player(12, "kiss")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)              
+            
+            l_interaction_d = cl_interaction_with_player(13, "hug")
+            l_interaction_w = cl_interaction_with_player(13, "hug")            
+            l_interaction_t = cl_interaction_with_player(13, "hug")            
+            self.list_of_pl_int_day.append(l_interaction_d)
+            self.list_of_pl_int_week.append(l_interaction_w)
+            self.list_of_pl_int_total.append(l_interaction_t)
+            
+            return True            
+        
+        # darkhound1 code
+        def add_pl_interaction(self, i_name):
+            counter = 0
+            while counter < len(self.list_of_pl_int_day):
+                if self.list_of_pl_int_day[counter].name == i_name:
+                    self.list_of_pl_int_day[counter].count += 1
+                    counter = 999
+                counter += 1
+            counter = 0
+            while counter < len(self.list_of_pl_int_week):
+                if self.list_of_pl_int_week[counter].name == i_name:
+                    self.list_of_pl_int_week[counter].count += 1
+                    counter = 999
+                counter += 1
+            counter = 0
+            while counter < len(self.list_of_pl_int_total):
+                if self.list_of_pl_int_total[counter].name == i_name:
+                    self.list_of_pl_int_total[counter].count += 1
+                    counter = 999
+                counter += 1 
+            return True
+        
+        # darkhound1 code        
+        def get_total_interactions_today(self):
+            l_count = 0
+            counter = 0
+            while counter < len(self.list_of_pl_int_day):
+                l_count += self.list_of_pl_int_day[counter].count
+                counter += 1 
+            return l_count
+        
+        
+        # darkhound1 code        
+        def get_total_interactions_week(self):
+            l_count = 0
+            counter = 0
+            while counter < len(self.list_of_pl_int_week):
+                l_count += self.list_of_pl_int_week[counter].count
+                counter += 1 
+            return l_count            
+        
+        
+        # darkhound1 code        
+        def init_interactions_today(self):
+            counter = 0
+            while counter < len(self.list_of_pl_int_day):
+                self.list_of_pl_int_day[counter].count = 0
+                counter += 1             
+            return True
+        
+        
+        # darkhound1 code        
+        def init_interactions_week(self):
+            counter = 0
+            while counter < len(self.list_of_pl_int_week):
+                self.list_of_pl_int_week[counter].count = 0
+                counter += 1             
+            return True            
+        
+        
+        # darkhound1 code        
+        def add_phone_image(self, i_image_number, i_make_default = True):
+            if not renpy.loadable("phone/phone_" + self.fname.lower() + str(i_image_number) + "_hover.png"):
+                return False
+            if i_image_number in self.list_of_phone_images:
+                return False
+            self.list_of_phone_images.append(i_image_number)
+            self.list_of_phone_images.sort()
+            if i_make_default == True:
+                self.phone_image = i_image_number
+            return True
+        
+        
+        # darkhound1 code        
+        def create_message(self, i_pool_id, i_ap, i_tomorrow = False):
+            l_message_pool = gl_message_pool[i_pool_id]
+            l_appointment_pool = gl_appointment_pool[l_message_pool.appointment_pool_id]
+            l_message = cl_message(i_pool_id, self, renpy.random.choice(l_appointment_pool.locs_available), i_ap, i_tomorrow)
+            l_message.description = gl_message_pool[i_pool_id].description.replace("&1", self.fname)
+            l_message.message_text = gl_message_pool[i_pool_id].message_text.replace("&1", self.playername)
+            return l_message
+        
+        
+        # darkhound1 code        
+        def get_action_icon_available(self, i_action):
+            if i_action == "workout_pecs":
+                if renpy.loadable("scenes/" + self.fname + "/" + self.fname + "_workout_pecs0a_swim" + str(self.swimwear) + ".jpg" ):
+                    return True
+            elif i_action == "workout_pullups":
+                if renpy.loadable("scenes/" + self.fname + "/" + self.fname + "_workout_pullups0a_swim" + str(self.swimwear) + ".jpg" ):
+                    return True
+            elif i_action == "workout_aerobics":
+                if renpy.loadable("scenes/" + self.fname + "/" + self.fname + "_workout_aerobics_swim" + str(self.swimwear) + ".jpg" ):
+                    return True                        
+            elif i_action == "workout_weightlifting": 
+                if renpy.loadable("scenes/" + self.fname + "/" + self.fname + "_workout_weightlifting0a_swim" + str(self.swimwear) + ".jpg"):
+                    return True  
+            elif i_action == "pool_sunbed": 
+                if renpy.loadable("scenes/" + self.fname + "/" + self.fname + "_pool_sunbed_swim" + str(self.swimwear) + ".jpg"):
+                    return True
+            elif i_action == "pool_swim": 
+                if renpy.loadable("scenes/" + self.fname + "/" + self.fname + "_pool_swim_swim" + str(self.swimwear) + ".jpg"):
+                    return True 
+            elif i_action == "pool_play": 
+                if renpy.loadable("scenes/" + self.fname + "/" + self.fname + "_pool_play_swim" + str(self.swimwear) + ".jpg"):
+                    return True   
+            elif i_action == "beach_walk":
+                if renpy.loadable("scenes/" + self.fname + "/" + self.fname + "_beach_walk1_swim" + str(self.swimwear) + ".jpg"):
+                    return True                   
+            
+            return False
+        
+        
+        # darkhound1 code        
+        def get_action_allowed(self, i_name):
+            for l_action in self.action_cooldwon_list:
+                if l_action.name == i_name:
+                    return False
+            return True
+        
+        
+        # darkhound1 code        
+        def get_action_not_allowed_text(self, i_name):            
+            for l_action in self.action_cooldwon_list:
+                if l_action.name == i_name:
+                    return l_action.text
+            return ""
+        
+        
+        # darkhound1 code        
+        def add_action_cooldown(self, i_name, i_ap_cooldown, i_text):
+            l_new_action_cooldown = cl_action_cooldown(i_name, i_ap_cooldown, i_text)
+            self.action_cooldwon_list.append(l_new_action_cooldown)
+            return True
+        
+        
+        # darkhound1 code        
+        def adjust_action_cooldown_timer(self, i_ap):
+            for l_action in self.action_cooldwon_list:
+                l_action.ap_cooldown -= i_ap
+                if l_action.ap_cooldown <= 0:
+                    self.action_cooldwon_list.remove(l_action)
+        
+        
+        # darkhound1 code        
+        def create_topics_list(self):
+            balance = 0   
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            self.topics_list.append(cl_topic("shopping", inclination))
+            
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            self.topics_list.append(cl_topic("sports", inclination))
+            
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            self.topics_list.append(cl_topic("music", inclination))
+            
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            self.topics_list.append(cl_topic("films", inclination))
+            
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            self.topics_list.append(cl_topic("gossip", inclination))
+            
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            self.topics_list.append(cl_topic("politics", inclination)) 
+            
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            self.topics_list.append(cl_topic("science", inclination))               
+            
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            self.topics_list.append(cl_topic("island", inclination))
+            
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            if self.fname == "Amy" or self.fname == "Alice":
+                self.topics_list.append(cl_topic("herself_" + self.fname, inclination)) 
+            else:
+                self.topics_list.append(cl_topic("herself", inclination))
+            
+            inclination = renpy.random.choice([-1, -1, 0, 1, 1])
+            balance = balance + inclination
+            self.topics_list.append(cl_topic("yourself", 0))
+            
+            while balance >= 2:
+                topic = renpy.random.choice(self.topics_list)
+                if topic.inclination <> -1:
+                    counter = 0
+                    while len(self.topics_list) > counter:
+                        if topic.name == self.topics_list[counter].name:
+                            self.topics_list[counter].inclination -= 1
+                            balance -= 1
+                            counter = 999
+                        counter += 1
+            
+            while balance <= -2:
+                topic = renpy.random.choice(self.topics_list)
+                if topic.inclination <> 1:
+                    counter = 0
+                    while len(self.topics_list) > counter:
+                        if topic.name == self.topics_list[counter].name:
+                            self.topics_list[counter].inclination += 1
+                            balance += 1 
+                            counter = 999
+                        counter += 1
+        
+        
+        # darkhound1 code        
+        def get_last_topic_results(self, i_name):
+            for topic in self.topics_list:
+                if topic.name == i_name:
+                    if topic.last_result <> "":
+                        return "(" + topic.last_result + ")"
+                    else:
+                        return ""
+        
+        
+        # darkhound1 code        
+        def add_last_topic_result(self, i_name, i_result):
+            if i_result == 0:
+                l_result = "0"
+            elif i_result == -1:
+                l_result = "-"
+            elif i_result == 1:
+                l_result = "+"
+            for topic in self.topics_list:
+                if topic.name == i_name:
+                    if len(topic.last_result) == 3:
+                        topic.last_result = topic.last_result[1:3] + l_result
+                    else:
+                        topic.last_result = topic.last_result + l_result
+                    topic.talk_again_timer = 8
+        
+        
+        # darkhound1 code        
+        def get_topic_talk_again(self, i_topic):
+            for topic in self.topics_list:
+                if topic.name == i_topic:
+                    if topic.talk_again_timer > 0:
+                        return False
+                    else:
+                        return True
+            return False
+        
+        
+        # darkhound1 code        
+        def get_topic_talk_inclination(self, i_topic):
+            for topic in self.topics_list:
+                if topic.name == i_topic:
+                    return topic.inclination
+        
+        
+        # darkhound1 code        
+        def adjust_topics_talk_timer(self, i_actionpoints):
+            for topic in self.topics_list:
+                if topic.talk_again_timer > 0:
+                    topic.talk_again_timer -= i_actionpoints
+                    if topic.talk_again_timer < 0:
+                        topic.talk_again_timer = 0
+        
+        
+        
+        def get_breast_size_text(self):
+            if self.breast_size == 0:
+                br_random_list = ["large breasts", "oversized boobs", "large mounds"]
+            elif self.breast_size == 1:
+                br_random_list = ["huge breasts",  "amazing breasts", "huge boobs", "huge chest", "huge tits"]
+            elif self.breast_size == 2:
+                br_random_list = ["huge melons", "incredibly huge breasts", "huge knockers", "mounds of pleasure"]            
+            return renpy.random.choice(br_random_list) 
+        
+        
+        def get_body_type_text(self):
+            if self.body_type == 0:
+                br_random_list = ["slim", "delicate", "slender", "graceful"]
+            elif self.body_type == 1:
+                br_random_list = ["perfect", "model", "exemplary"]
+            elif self.body_type == 2:  
+                br_random_list = ["fit",  "muscular", "strong", "powerful", "athletic"]
+                return renpy.random.choice(br_random_list)
+            elif self.body_type == 3:
+                br_random_list = ["voluptuous", "curvaceous", "well proportioned", "ample"]            
+            return renpy.random.choice(br_random_list)             
+
+    # darkhound1 code        
+    class cl_actionCooldown:
+        def __init__(self, i_name, i_ap_cooldown, i_text):
+            self.name = i_name
+            self.ap_cooldown = i_ap_cooldown
+            self.text = i_text
+
+
+    # darkhound1 code        
+    class cl_interactionWithPlayer:
+        def __init__(self, i_id, i_name): 
+            self.id = i_id
+            self.name = i_name
+            self.count = 0
+
+    # darkhound1 code        
+    class cl_topic:
+        def __init__(self, i_name, i_inclination):
+             self.name = i_name
+             self.inclination = i_inclination
+             self.talk_again_timer = 0
+             self.last_result = ""
+
+
+          
+
+label createPlayer:
+    $ Player = CharacterContainer(0, playerFname, playerLname, playerSex, charList, fightTypes)
+    return
+
+label createCharacters(charList, fightTypes):
+    call createCindy (charList, fightTypes)
+    call createDenisa (charList, fightTypes)
+    call createSunny (charList, fightTypes)
+
+    return
+
+    
+label createCindy(charList, fightTypes):
+    $ Cindy = CharacterContainer(1 , "Cindy", "MacGreggor", 'f', charList, fightTypes)
+    
+    $ Cindy.clothes = "gymClothes"
+    $ Cindy.textColor = charTextColor["Cindy"]
+    $ Cindy.worksForPlayer = True
+    $ Cindy.location = "Boxing gym"
+    
+    $ Cindy.generalValues.confidence = 5
+    $ Cindy.generalValues.fame = 3
+    $ Cindy.generalValues.money = 200
+    
+    $ Cindy.stats.strength = 6
+    $ Cindy.stats.fitness  = 5
+    $ Cindy.stats.endurance = 5
+    $ Cindy.stats.charisma = 5
+    $ Cindy.stats.sexperience = 5
+    $ Cindy.stats.ap = 50
+    
+    $ Cindy.bodyStats.weight = 175
+    $ Cindy.bodyStats.bodyType = 1
+    $ Cindy.bodyStats.heightType = 1
+    $ Cindy.bodyStats.breastSize = 2
+    $ Cindy.bodyStats.breastType = 2
+    
+    $ Cindy.sexValues.orientation = 0
+    $ Cindy.sexValues.orgasm = 0
+    $ Cindy.sexValues.arousal = 0
+    $ Cindy.sexValues.exhibitionist = 5
+    
+    $ Cindy.fighterData.dirtyFighter = 2
+
+    $ Cindy.fighterData.Wrestling.skill = 5
+    $ Cindy.fighterData.Wrestling.win = 5
+    $ Cindy.fighterData.Wrestling.loss = 3
+    $ Cindy.fighterData.Wrestling.humil = 0
+    $ Cindy.fighterData.Wrestling.revenge = 0
+    $ Cindy.fighterData.Wrestling.injury = 0
+    $ Cindy.fighterData.Wrestling.champion = 0
+    $ Cindy.fighterData.Wrestling.currChampion = False
+
+    $ Cindy.fighterData.Boxing.skill = 4
+    $ Cindy.fighterData.Boxing.win = 3
+    $ Cindy.fighterData.Boxing.loss = 3
+    $ Cindy.fighterData.Boxing.humil = 0
+    $ Cindy.fighterData.Boxing.revenge = 0
+    $ Cindy.fighterData.Boxing.injury = 0
+    $ Cindy.fighterData.Boxing.champion = 0
+    $ Cindy.fighterData.Boxing.currChampion = False
+
+    $ Cindy.fighterData.Catfight.skill = 3
+    $ Cindy.fighterData.Catfight.win = 2
+    $ Cindy.fighterData.Catfight.loss = 4
+    $ Cindy.fighterData.Catfight.humil = 1
+    $ Cindy.fighterData.Catfight.revenge = 0
+    $ Cindy.fighterData.Catfight.injury = 1
+    $ Cindy.fighterData.Catfight.champion = 0
+    $ Cindy.fighterData.Catfight.currChampion = False
+
+    $ Cindy.fighterData.Sexfight.skill = 3
+    $ Cindy.fighterData.Sexfight.win = 1
+    $ Cindy.fighterData.Sexfight.loss = 1
+    $ Cindy.fighterData.Sexfight.humil = 0
+    $ Cindy.fighterData.Sexfight.revenge = 0
+    $ Cindy.fighterData.Sexfight.injury = 0
+    $ Cindy.fighterData.Sexfight.champion = 0
+    $ Cindy.fighterData.Sexfight.currChampion = False
+
+    $ Cindy.fighterData.Titfight.skill = 4
+    $ Cindy.fighterData.Titfight.win = 3
+    $ Cindy.fighterData.Titfight.loss = 2
+    $ Cindy.fighterData.Titfight.humil = 0
+    $ Cindy.fighterData.Titfight.revenge = 0
+    $ Cindy.fighterData.Titfight.injury = 0
+    $ Cindy.fighterData.Titfight.champion = 0
+    $ Cindy.fighterData.Titfight.currChampion = False
+    
+    $ Cindy.interRelation.Player.attraction = 30
+    $ Cindy.interRelation.Player.anger = 0
+    $ Cindy.interRelation.Player.intimidated = 0
+    $ Cindy.interRelation.Player.favors = 0
+    
+    $ Cindy.interRelation.Denisa.attraction = 5
+    $ Cindy.interRelation.Denisa.anger = 10
+    $ Cindy.interRelation.Denisa.intimidated = 0
+    $ Cindy.interRelation.Denisa.favors = 0
+    
+    $ Cindy.interRelation.Sunny.attraction = 5
+    $ Cindy.interRelation.Sunny.anger = 2
+    $ Cindy.interRelation.Sunny.intimidated = 0
+    $ Cindy.interRelation.Sunny.favors = 0
+    
+    return
+    
+label createDenisa(charList, fightTypes):
+    $ Denisa = CharacterContainer(1 , "Denissa", "Jones", 'f', charList, fightTypes)
+    $ Denisa.textColor = charTextColor["Denisa"]
+    
+    $ Denisa.generalValues.confidence = 5
+    $ Denisa.generalValues.fame = 3
+    $ Denisa.generalValues.money = 200
+    
+    $ Denisa.stats.strength = 5
+    $ Denisa.stats.fitness  = 5
+    $ Denisa.stats.endurance = 6
+    $ Denisa.stats.charisma = 5
+    $ Denisa.stats.sexperience = 5
+    $ Denisa.stats.ap = 50
+    
+    $ Denisa.bodyStats.weight = 172
+    $ Denisa.bodyStats.bodyType = 1
+    $ Denisa.bodyStats.heightType = 1
+    $ Denisa.bodyStats.breastSize = 2
+    $ Denisa.bodyStats.breastType = 2
+    
+    $ Denisa.sexValues.orientation = 0
+    $ Denisa.sexValues.orgasm = 0
+    $ Denisa.sexValues.arousal = 0
+    $ Denisa.sexValues.exhibitionist = 5
+
+    $ Denisa.fighterData.dirtyFighter = 2
+    
+    $ Denisa.fighterData.Wrestling.skill = 2
+    $ Denisa.fighterData.Wrestling.win = 2
+    $ Denisa.fighterData.Wrestling.loss = 5
+    $ Denisa.fighterData.Wrestling.humil = 2
+    $ Denisa.fighterData.Wrestling.revenge = 0
+    $ Denisa.fighterData.Wrestling.injury = 0
+    $ Denisa.fighterData.Wrestling.champion = 0
+    $ Denisa.fighterData.Wrestling.currChampion = False
+
+    $ Denisa.fighterData.Boxing.skill = 4
+    $ Denisa.fighterData.Boxing.win = 4
+    $ Denisa.fighterData.Boxing.loss = 3
+    $ Denisa.fighterData.Boxing.humil = 0
+    $ Denisa.fighterData.Boxing.revenge = 0
+    $ Denisa.fighterData.Boxing.injury = 1
+    $ Denisa.fighterData.Boxing.champion = 0
+    $ Denisa.fighterData.Boxing.currChampion = False
+
+    $ Denisa.fighterData.Catfight.skill = 5
+    $ Denisa.fighterData.Catfight.win = 5
+    $ Denisa.fighterData.Catfight.loss = 2
+    $ Denisa.fighterData.Catfight.humil = 0
+    $ Denisa.fighterData.Catfight.revenge = 1
+    $ Denisa.fighterData.Catfight.injury = 1
+    $ Denisa.fighterData.Catfight.champion = 0
+    $ Denisa.fighterData.Catfight.currChampion = False
+
+    $ Denisa.fighterData.Sexfight.skill = 5
+    $ Denisa.fighterData.Sexfight.win = 4
+    $ Denisa.fighterData.Sexfight.loss = 2
+    $ Denisa.fighterData.Sexfight.humil = 1
+    $ Denisa.fighterData.Sexfight.revenge = 1
+    $ Denisa.fighterData.Sexfight.injury = 0
+    $ Denisa.fighterData.Sexfight.champion = 0
+    $ Denisa.fighterData.Sexfight.currChampion = False
+
+    $ Denisa.fighterData.Titfight.skill = 4
+    $ Denisa.fighterData.Titfight.win = 2
+    $ Denisa.fighterData.Titfight.loss = 3
+    $ Denisa.fighterData.Titfight.humil = 0
+    $ Denisa.fighterData.Titfight.revenge = 0
+    $ Denisa.fighterData.Titfight.injury = 1
+    $ Denisa.fighterData.Titfight.champion = 0
+    $ Denisa.fighterData.Titfight.currChampion = False
+    
+    $ Denisa.interRelation.Player.attraction = 10
+    $ Denisa.interRelation.Player.anger = 0
+    $ Denisa.interRelation.Player.intimidated = 0
+    $ Denisa.interRelation.Player.favors = 0
+    
+    $ Denisa.interRelation.Cindy.attraction = 5
+    $ Denisa.interRelation.Cindy.anger = 10
+    $ Denisa.interRelation.Cindy.intimidated = 0
+    $ Denisa.interRelation.Cindy.favors = 0
+    
+    $ Denisa.interRelation.Sunny.attraction = 5
+    $ Denisa.interRelation.Sunny.anger = 2
+    $ Denisa.interRelation.Sunny.intimidated = 0
+    $ Denisa.interRelation.Sunny.favors = 0
+       
+    return
+    
+label create_jane(charList, fightTypes):
+    
+    return
+    
+label create_kathy(charList, fightTypes):
+    
+    return
+    
+label createSunny(charList, fightTypes):
+    $ Sunny = CharacterContainer(1 , "Sunny", "Marcel", 'm', charList, fightTypes)
+    $ Sunny.textColor = charTextColor["Sunny"]
+
+    $ Sunny.generalValues.confidence = 5
+    $ Sunny.generalValues.fame = 3
+    $ Sunny.generalValues.money = 200
+    
+    $ Sunny.stats.strength = 5
+    $ Sunny.stats.fitness  = 5
+    $ Sunny.stats.endurance = 5
+    $ Sunny.stats.charisma = 5
+    $ Sunny.stats.sexperience = 5
+    $ Sunny.stats.ap = 50
+    
+    $ Sunny.bodyStats.weight = 172
+    $ Sunny.bodyStats.bodyType = 1
+    $ Sunny.bodyStats.heightType = 1
+    $ Sunny.bodyStats.cockSize = 1
+    
+    $ Sunny.sexValues.orientation = 0
+    $ Sunny.sexValues.orgasm = 0
+    $ Sunny.sexValues.arousal = 0
+    $ Sunny.sexValues.exhibitionist = 5
+        
+    $ Sunny.interRelation.Player.attraction = 0
+    $ Sunny.interRelation.Player.anger = 2
+    $ Sunny.interRelation.Player.intimidated = 0
+    $ Sunny.interRelation.Player.favors = 0
+    
+    $ Sunny.interRelation.Cindy.attraction = 5
+    $ Sunny.interRelation.Cindy.anger = 2
+    $ Sunny.interRelation.Cindy.intimidated = 0
+    $ Sunny.interRelation.Cindy.favors = 0
+           
+    $ Sunny.interRelation.Denisa.attraction = 5
+    $ Sunny.interRelation.Denisa.anger = 10
+    $ Sunny.interRelation.Denisa.intimidated = 0
+    $ Sunny.interRelation.Denisa.favors = 0
+    
+    return

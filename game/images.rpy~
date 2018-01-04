@@ -1,0 +1,33 @@
+
+label createImageSets:
+    image gymDay = "locations/boxingGym/boxingGym_day.png"
+
+    image fProtagSelect = "player/protag_f_1.png"
+    image mProtagSelect = "player/protag_m_1.png"
+        
+    image Cindy gymClothes happy aroused = "cindy/happy_midAroused_gymClothes.png"
+        
+    return
+    
+    
+label playerConversationImages:
+    
+    if actor == "Cindy":
+        if Cindy.generalValues.mood > 20 and Cindy.sexValues.arousal > 20:
+            if Cindy.clotes == "gymClothes":
+                show Cindy gymClothes happy aroused
+                return
+    
+    return
+    
+    
+label getWalkinImages:
+    
+    return
+    
+    
+label getFaceOffImages:
+    return
+    
+label getFightImages:
+    return
