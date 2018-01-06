@@ -10,6 +10,7 @@ init python:
             self.back = 0
             self.lBoob = 0
             self.rBoob = 0
+            self.stomach = 0
             self.pussy = 0
             self.lLeg = 0
             self.rLeg = 0
@@ -23,7 +24,6 @@ init python:
             self.loss = 0
             self.humil = 0
             self.revenge = 0
-            self.injury = BodyParts()
             self.champion = 0
             self.currChampion = False
             
@@ -31,12 +31,19 @@ init python:
     class FightStats:
         def __init__(self):
             self.health = 0
+            self.healthmax = 0
             self.energy = 0
+            self.energymax = 0
+            self.arousal = 0
+            self.arousalmax = 20
             self.rage = 0
-            self.opponentHate = 0
+            self.ragemax = 20
             self.pain = BodyParts()
             self.averagePain = self.calculate_average_pain()
-            self.damage = BodyParts()
+            self.damage = BodyParts()           
+            self.topdamage = 0 # for stripping top
+            self.bottomdamage = 0 # for stripping bottom
+
             
         def calculate_average_pain(self):
             k = 0
@@ -47,10 +54,10 @@ init python:
            return total/float(k)
             
     class FighterData:
-         def __init__(self, fightTypes):
+         def __init__(self, fighttypes):
              self.dirtyFighter = 0
              self.readyToFight = True
-             for tuple  in fightTypes:
+             for tuple  in fighttypes:
                  setattr(self, tuple[0], FightRecords())
 
 
@@ -74,19 +81,19 @@ init python:
              self.speed = 5
              self.charisma = 5
              self.sexperience = 5
+             self.confidence = 5
+             self.confidenceMax = 30
              self.fame = 0
+             self.mood = 25
+             self.moodMax = 30
              self.currInjury = 0
              self.totalInjury = 0
+             self.injury = BodyParts()
             
          
     class GeneralValues:
         def __init__(self):
-            self.confidence = 5
-            self.confidenceMax = 30
-            self.fame = 0
             self.money = 500
-            self.mood = 25
-            self.moodMax = 30
             
             
     class SexValues:
@@ -124,7 +131,7 @@ init python:
 
             
     class CharacterContainer:
-        def __init__(self, id, fname, lname, sex, charList, fightTypes):
+        def __init__(self, id, fname, lname, sex, charList, fighttypes):
             self.id = id
             if id == 0:
                 self.gameEvents = cl_gameEvents()
@@ -142,13 +149,14 @@ init python:
 
             self.generalValues = GeneralValues()
             self.stats = CharacterStats()
+            self.fightStats = FightStats()
             self.bodyStats = BodyStats(sex)
             self.sexValues = SexValues()
             
             self.interRelation = InterRelationStats(charList)
                 
             if sex == "f":
-                self.fighterData = FighterData(fightTypes)
+                self.fighterData = FighterData(fighttypes)
 
         def group_sex_update(self):
             for character in dict(self.interRelation):
@@ -604,19 +612,19 @@ init python:
           
 
 label createPlayer:
-    $ Player = CharacterContainer(0, playerFname, playerLname, playerSex, charList, fightTypes)
+    $ Player = CharacterContainer(0, playerFname, playerLname, playerSex, charList, fighttypes)
     return
 
-label createCharacters(charList, fightTypes):
-    call createCindy (charList, fightTypes)
-    call createDenisa (charList, fightTypes)
-    call createSunny (charList, fightTypes)
+label createCharacters(charList, fighttypes):
+    call createCindy (charList, fighttypes)
+    call createDenisa (charList, fighttypes)
+    call createSunny (charList, fighttypes)
 
     return
 
     
-label createCindy(charList, fightTypes):
-    $ Cindy = CharacterContainer(1 , "Cindy", "MacGreggor", 'f', charList, fightTypes)
+label createCindy(charList, fighttypes):
+    $ Cindy = CharacterContainer(1 , "Cindy", "MacGreggor", 'f', charList, fighttypes)
     
     $ Cindy.clothes = "gymClothes"
     $ Cindy.textColor = charTextColor["Cindy"]
@@ -709,8 +717,8 @@ label createCindy(charList, fightTypes):
     
     return
     
-label createDenisa(charList, fightTypes):
-    $ Denisa = CharacterContainer(1 , "Denissa", "Jones", 'f', charList, fightTypes)
+label createDenisa(charList, fighttypes):
+    $ Denisa = CharacterContainer(1 , "Denissa", "Jones", 'f', charList, fighttypes)
     $ Denisa.textColor = charTextColor["Denisa"]
     
     $ Denisa.generalValues.confidence = 5
@@ -799,16 +807,16 @@ label createDenisa(charList, fightTypes):
        
     return
     
-label create_jane(charList, fightTypes):
+label create_jane(charList, fighttypes):
     
     return
     
-label create_kathy(charList, fightTypes):
+label create_kathy(charList, fighttypes):
     
     return
     
-label createSunny(charList, fightTypes):
-    $ Sunny = CharacterContainer(1 , "Sunny", "Marcel", 'm', charList, fightTypes)
+label createSunny(charList, fighttypes):
+    $ Sunny = CharacterContainer(1 , "Sunny", "Marcel", 'm', charList, fighttypes)
     $ Sunny.textColor = charTextColor["Sunny"]
 
     $ Sunny.generalValues.confidence = 5

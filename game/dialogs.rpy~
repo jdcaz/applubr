@@ -1,5 +1,5 @@
 init python:
-    actorObj = cl_character(999,"", "", "", [],[])
+    actorObj = Character(999,"", "", "", [],[])
 
 label setSpeaker(actorObj):
     define spkr = Character(actorObj.fname, who_color = actorObj.textColor)
@@ -173,14 +173,14 @@ label checkOpponent():
 
 label pickFightType:
     
-    $ fightType = menu(fightTypes)
+    $ fighttype = menu(fighttypes)
 
-    return fightType
+    return fighttype
 
 label checkFightType:
     if typeCount >= 6:
         return
-    if fightType == "Boxing":
+    if fighttype == "Boxing":
         if actorObj.fighterData.Boxing.skill < opponentObj.fighterData.Boxing.skill -3:
             spkr "I'm not ready to box [opponent] yet."
             $ typeCount += 1
@@ -188,7 +188,7 @@ label checkFightType:
         else:
             call getBoxingAffirmativeText
             
-    elif fightType == "Wrestling":
+    elif fighttype == "Wrestling":
         if actorObj.fighterData.Wrestling.skill < opponentObj.fighterData.Wrestling.skill -3:
             spkr "I'm not ready to box [opponent] yet."
             $ typeCount += 1
@@ -196,7 +196,7 @@ label checkFightType:
         else:
             call getWrestlingAffirmativeText
             
-    elif fightType == "Sexfight":
+    elif fighttype == "Sexfight":
         if actorObj.fighterData.Sexfight.skill < opponentObj.fighterData.Sexfight.skill -3:
             spkr "I'm not ready to sexfight [opponent] yet."
             $ typeCount += 1
@@ -204,7 +204,7 @@ label checkFightType:
         else:
             call getSexfightAffirmativeText
             
-    elif fightType == "Titfight":
+    elif fighttype == "Titfight":
         if actorObj.fighterData.Wrestling.skill < opponentObj.fighterData.Wrestling.skill -3:
             spkr "I'm not ready to titfight [opponent] yet."
             $ typeCount += 1
@@ -212,7 +212,7 @@ label checkFightType:
         else:
             call getTitfightAffirmativeText
             
-    elif fightType == "Catfight":
+    elif fighttype == "Catfight":
         if actorObj.fighterData.Wrestling.skill < opponentObj.fighterData.Wrestling.skill -3:
             spkr "I'm not ready to catfight [opponent] yet."
             $ typeCount += 1
@@ -225,18 +225,18 @@ label checkFightType:
     
 label getAttire:
     
-    $ fightAttire = menu(fightAttires)
+    $ fightattire = menu(fightattires)
     
-    return fightAttire
+    return fightattire
     
 label checkAttire():
     if attireCount >= 6:
         return
-    if fightType == "Boxing":
-        if fightAttire == "Normal":
+    if fighttype == "Boxing":
+        if fightattire == "Normal":
             $ textString =  "Suits me."
 
-        elif fightAttire == "Normal, topless":
+        elif fightattire == "Normal, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -244,7 +244,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
             
-        elif fightAttire == "Underwear":
+        elif fightattire == "Underwear":
             if actorObj.sexValues.exhibitionist < 5:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -252,7 +252,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
                 
-        elif fightAttire == "Underwear, topless":
+        elif fightattire == "Underwear, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -260,7 +260,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
                 
-        elif fightAttire == "Nude":
+        elif fightattire == "Nude":
             if actorObj.sexValues.exhibitionist < 15:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -268,11 +268,11 @@ label checkAttire():
             else:
                 $ textString = "Good, I don't want anything in the way!"
 
-    elif fightType == "Wrestling":
-        if fightAttire == "Normal":
+    elif fighttype == "Wrestling":
+        if fightattire == "Normal":
             $ textString =  "Suits me."
 
-        elif fightAttire == "Normal, topless":
+        elif fightattire == "Normal, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -280,7 +280,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
             
-        elif fightAttire == "Underwear":
+        elif fightattire == "Underwear":
             if actorObj.sexValues.exhibitionist < 5:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -288,7 +288,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
                 
-        elif fightAttire == "Underwear, topless":
+        elif fightattire == "Underwear, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -296,7 +296,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
                 
-        elif fightAttire == "Nude":
+        elif fightattire == "Nude":
             if actorObj.sexValues.exhibitionist < 15:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -305,13 +305,13 @@ label checkAttire():
                 $ textString = "Good, I don't want anything in the way!"
 
             
-    elif fightType == "Titfight":
-        if fightAttire == "Normal":
+    elif fighttype == "Titfight":
+        if fightattire == "Normal":
             spkr "For a titfight?"
             $ attireCount += 1
             jump getAttire
 
-        elif fightAttire == "Normal, topless":
+        elif fightattire == "Normal, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -319,7 +319,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
             
-        elif fightAttire == "Underwear":
+        elif fightattire == "Underwear":
             if actorObj.sexValues.exhibitionist < 5:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -329,7 +329,7 @@ label checkAttire():
                 $ attireCount += 1
                 jump getAttire
                 
-        elif fightAttire == "Underwear, topless":
+        elif fightattire == "Underwear, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -337,7 +337,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
                 
-        elif fightAttire == "Nude":
+        elif fightattire == "Nude":
             if actorObj.sexValues.exhibitionist < 15:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -346,13 +346,13 @@ label checkAttire():
                 $ textString = "Good, I don't want anything in the way!"
 
             
-    elif fightType == "Sexfight":
-        if fightAttire == "Normal":
+    elif fighttype == "Sexfight":
+        if fightattire == "Normal":
             spkr "For a sexfight?"
             $ attireCount += 1
             jump getAttire
 
-        elif fightAttire == "Normal, topless":
+        elif fightattire == "Normal, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -360,7 +360,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
             
-        elif fightAttire == "Underwear":
+        elif fightattire == "Underwear":
             if actorObj.sexValues.exhibitionist < 5:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -368,7 +368,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
                 
-        elif fightAttire == "Underwear, topless":
+        elif fightattire == "Underwear, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -376,7 +376,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
                 
-        elif fightAttire == "Nude":
+        elif fightattire == "Nude":
             if actorObj.sexValues.exhibitionist < 15:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -385,11 +385,11 @@ label checkAttire():
                 $ textString = "Good, I don't want anything in the way!"
 
             
-    elif fightType == "Catfight":
-        if fightAttire == "Normal":
+    elif fighttype == "Catfight":
+        if fightattire == "Normal":
             $ textString =  "Suits me."
 
-        elif fightAttire == "Normal, topless":
+        elif fightattire == "Normal, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -397,7 +397,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
             
-        elif fightAttire == "Underwear":
+        elif fightattire == "Underwear":
             if actorObj.sexValues.exhibitionist < 5:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -405,7 +405,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
                 
-        elif fightAttire == "Underwear, topless":
+        elif fightattire == "Underwear, topless":
             if actorObj.sexValues.exhibitionist < 10:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -413,7 +413,7 @@ label checkAttire():
             else:
                 $ textString = "Suits me."
                 
-        elif fightAttire == "Nude":
+        elif fightattire == "Nude":
             if actorObj.sexValues.exhibitionist < 15:
                 spkr "I'm not ready for that yet."
                 $ attireCount += 1
@@ -425,27 +425,27 @@ label checkAttire():
     return textString
     
 label getRules:
-    if fightType == "Boxing":
-        $ fightRules = menu(boxingRules)
+    if fighttype == "Boxing":
+        $ fightRules = menu(boxingrules)
         
-    elif fightType == "Wrestling":
-        $ fightRules = menu(wrestlingRules)
+    elif fighttype == "Wrestling":
+        $ fightRules = menu(wrestlingrules)
         
-    elif fightType == "Sexfight":
-        $ fightRules = menu(sexfightRules)
+    elif fighttype == "Sexfight":
+        $ fightRules = menu(sexfightrules)
         
-    elif fightType == "Titfight":
-        $ fightRules = menu(titfightRules)
+    elif fighttype == "Titfight":
+        $ fightRules = menu(titfightrules)
         
-    elif fightType == "Catfight":
-        $ fightRules = menu(catfightRules)
+    elif fighttype == "Catfight":
+        $ fightRules = menu(catfightrules)
 
     return fightRules
     
 label checkRules ():
     if rulesCount >= 6:
         return
-    if fightType == "Boxing":
+    if fighttype == "Boxing":
         if fightRules == "Gloves":
             $ textString = "Suits me."
 
@@ -473,7 +473,7 @@ label checkRules ():
                 $ rulesCount += 1
                 jump getRules
         
-    elif fightType == "Wrestling":
+    elif fighttype == "Wrestling":
         if fightRules == "Normal":
             $ textString = "Suits me."
         elif fightRules == "Submission only":
@@ -499,7 +499,7 @@ label checkRules ():
                 $ rulesCount += 1
                 jump getRules
         
-    elif fightType == "Sexfight":
+    elif fighttype == "Sexfight":
         if fightRules == "Sex only":
             $ textString = "Suits me."
         elif fightRules == "No rules":
@@ -510,7 +510,7 @@ label checkRules ():
                 $ rulesCount += 1
                 jump getRules
         
-    elif fightType == "Titfight":
+    elif fighttype == "Titfight":
         if fightRules == "Tits only":
             $ textString = "Suits me."
         elif fightRules == "No rules":
@@ -521,7 +521,7 @@ label checkRules ():
                 $ rulesCount += 1
                 jump getRules
         
-    elif fightType == "Catfight":
+    elif fighttype == "Catfight":
         if fightRules == "Rules":
             $ textString = "Suits me."
         elif fightRules == "No rules":
@@ -561,7 +561,7 @@ label convSetUpFight:
         
         spkr "What kind of fight are you looking for?"
         call pickFightType
-        $ fightType = _return
+        $ fighttype = _return
         $ typeOK = False
         $ typeCount = 0
         while not typeOK and typeCount < 6:
@@ -590,7 +590,7 @@ label convSetUpFight:
         spkr "And what will we be wearing?"
         
         call getAttire
-        $ fightAttire = _return
+        $ fightattire = _return
         $ attireOK = False
         $ attireCount = 0
         while not attireOK and attireCount < 6:

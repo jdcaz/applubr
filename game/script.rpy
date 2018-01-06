@@ -49,12 +49,11 @@ label start:
     $ choiceRight = Position(xpos=0.75, ypos = 0.7)
 #    $ charList = ["Player", "Cindy", "Denisa", "Jane", "Kathy", "Sunny"]
     $ charList = ["Player", "Cindy", "Denisa", "Sunny"]
-    $ fighterList = [ ("Cindy", "Cindy"), ("Denisa", "Denisa")]
+    $ fighterlist = [ ("Cindy", "Cindy"), ("Denisa", "Denisa")]
         
     call createLocations
     call setUpLocations
-    call setUpFightTypes
-    call createCharacters(charList, fightTypes)
+    call createCharacters(charList, fighttypes)
     
     #######
     $ Cindy.interRelation.Player.attraction = 30
@@ -127,7 +126,7 @@ label start:
     if not lname: 
         $ lname = "Smith"
     
-    $ Player = Character(0, fname, lname, playerSex, charList, fightTypes)
+    $ Player = Character(0, fname, lname, playerSex, charList, fighttypes)
     
     hide protagSelect
     N "Good, your name is [Player.fname] [Player.lname]"
