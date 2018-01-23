@@ -10,6 +10,7 @@ init python:
             self.back = 0
             self.lBoob = 0
             self.rBoob = 0
+            self.stomach = 0
             self.pussy = 0
             self.lLeg = 0
             self.rLeg = 0
@@ -30,12 +31,19 @@ init python:
     class FightStats:
         def __init__(self):
             self.health = 0
+            self.healthmax = 0
             self.energy = 0
+            self.energymax = 0
+            self.arousal = 0
+            self.arousalmax = 20
             self.rage = 0
-            self.opponentHate = 0
+            self.ragemax = 20
             self.pain = BodyParts()
             self.averagePain = self.calculate_average_pain()
-            self.damage = BodyParts()
+            self.damage = BodyParts()           
+            self.topdamage = 0 # for stripping top
+            self.bottomdamage = 0 # for stripping bottom
+
             
         def calculate_average_pain(self):
             k = 0
@@ -73,7 +81,11 @@ init python:
              self.speed = 5
              self.charisma = 5
              self.sexperience = 5
+             self.confidence = 5
+             self.confidenceMax = 30
              self.fame = 0
+             self.mood = 25
+             self.moodMax = 30
              self.currInjury = 0
              self.totalInjury = 0
              self.injury = BodyParts()
@@ -81,12 +93,7 @@ init python:
          
     class GeneralValues:
         def __init__(self):
-            self.confidence = 5
-            self.confidenceMax = 30
-            self.fame = 0
             self.money = 500
-            self.mood = 25
-            self.moodMax = 30
             
             
     class SexValues:
@@ -142,6 +149,7 @@ init python:
 
             self.generalValues = GeneralValues()
             self.stats = CharacterStats()
+            self.fightStats = FightStats()
             self.bodyStats = BodyStats(sex)
             self.sexValues = SexValues()
             

@@ -1,9 +1,9 @@
 init python:
-    class cl_gameEvents():
+    class GameEvents():
         def __init__(self): pass
     
         def setGameEvents(self):
-            self.watchedCindyTrainingVideo = False
+            self.watchedCindyTrainingVideo = False               
             
             return
 

@@ -8,35 +8,39 @@ init python:
             return
 
 label cindyTrainingEvent:
+
     if not Player.gameEvents.watchedCindyTrainingVideo:
         
         N "You arrive at the gym to find your best (and only) fighter Cindy training"
+        $ config.skipping = False
         $ renpy.movie_cutscene("vids/cindy/cindyTraining1.mp4")
+        $ config.skipping = True
         
         N "As you approach, Cindy sees you and slides into a more advantageous position"
         
+        $ config.skipping = False
         $ renpy.movie_cutscene("vids/cindy/cindyTraining2.mp4")
+        $ config.skipping = True
         
     call playerConversationImages
     
     C "Hey there [Player.fname], you coming to talk or did you have something else in mind?"
         
-    call generalConversation(Cindy)
+    call generalConversation (Cindy)
     
     if Cindy.fighterData.readyToFight:
         $ fightIsOn = True
         
     return    
-    
+   
+label doTraining:
+    return
     
 label processEvents:
     
-    if location == "boxingGym":
-        if Cindy.location == location:
+    if location.name == "Boxing gym":
+        if Cindy.location == location.name:
             $ actor = "Cindy"
             call cindyTrainingEvent
-            
-    if fightIsOn:
-        jump globalFightStructure
         
     return

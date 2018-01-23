@@ -235,20 +235,33 @@ init python:
             self.rules = parse_rules()
             self.location = location
             
-            self.position = [(0,0,0), (0,0,0)]
+            self.position = [(0,0,0), (0,0,0)] # fighter venue positions and facing status
+                # facing statii: 0: facing opponent, 1: facing sideways, 2: facing backwards, 3: down on back, 4: down on face, 5: down on side, 6: on ropes facing opponent, 7: on ropes facing out, 8: in corner facing opponent, 9: in corner facing out
+            self.hold = False # is anyone being held
+            self.grabbing = [["", ""],["",""]] # what is being grabbed
+            self.breakhold = False # did a hold get broken this round
+            
+            self.move = [0, 0, 0] # delta for move
+            self.knockdown = [0,0] # did someone get knocked down this round
 
             self.initiative = 0
             self.momentum = 0
             self.momentumchange = 0
+            self.momentummult = 0
             self.prevmomentum = 0
+            
             self.attacker = 0 # numerical id for fighter attacking
             self.attackbonus = 0 # initiative bonus for attacking fighter
             self.defender = 0 # numerical id for fighter defending
-            self.damagemod = 0 # general damage bonus
+
+            self.maxdamage = 0 # used to determine crits
+            self.damagemod = 0 # general damage bonus            
 
             self.dirtydamage = 2 # damage bonus for dirty attack
             self.dirtycount = 0 # tracking # of dirty attacks
             self.dirtymax = BOXING_DIRTY_MAX
+            
+            self.counter = False
             
             self.attackresult = [0,"",0,0,0] # target fighter, body part, damage, attacker energy drain, target energy drain
             self.incrementdirtylevel = False
@@ -286,11 +299,30 @@ init python:
             self.fighterlist
             
         def run_turn(self):
-            self.attacker = self.initiative[0]
+            set_attacker()
             self.attackbonus = self.initiative[1]
             self.breakclinch = False
+            self.breakhold = False            
+            self.knockdown = False
             
-            generate_attack()
+            for hands in self.grabbing:
+                if any(hands):
+                    self.hold = True
+                else:
+                    self.hold = False
+            
+            set_attacker()
+
+            # both fighters in same location
+            if position[self.attacker][0:2] == position[self.defender][0:2]:
+                populate_prob_list()
+                select_attack()
+                get_target()
+                get_counter()
+            else:
+                move_to_opponent() # FIXME: need to create 
+                self.momentumchamge = -1*
+
             calculate_damage()
             calculate_knockdown()
             if self.updatelocation:
@@ -303,41 +335,35 @@ init python:
             cleanup_round()
             generate_text()
             
-        def generate_attack(self, initiative):
-            self.attacker = initiative[0] # position in fighterlist of attacker
-            self.defender = int(not initiative[0]) # position in fighterlist of defender
+        def set_attacker(self):
+            self.attacker = self.initiative[0] # position in fighterlist of attacker
+            self.defender = int(not self.initiative[0]) # position in fighterlist of defender
             self.dirtyattack = False # reset dirty attack
-
+            
             self.defending[attacker] = False # unset attacker defending
             
             if initiative[0] == 1:
                 # momentum positive for fighter 1, negative for 2
-                momentmult = -1
+                self.momentmult = -1
                 
-            if position[0][0:2] == position[1][0:2]:
-                populate_prob_list()
-                generate_attack()
-                get_target()
-                get_counter()
-                update_momentum()
-            else:
-                move_to_opponent() # FIXME: need to create 
             
-        def populate_prob_list(self, problist):
+        def populate_prob_list(self):
             if self.clinch:
+                # clinch attack list
                 self.attacklist = ["Punch", "Break", "Push", "Titfight", "Kiss", "Dirty"]
+            elif self.hold:
+                # holding attack lists
+                self.attacklist = ["Punch", "Break", "Kiss", "Push", "Grab", "Dirty"]
             else:
+                # normal attack list
                 self.attacklist = ["Wild swing", "Jab", "Cross", "Hook", "Uppercut", "Drop",  "Cover up", "Clinch", "Disengage", "Dirty"]
 
             self.problist = [0]*len(attacklist)
             # increment dirty prob by fighter's scaled dirty stat
             self.problist[-1] += self.fighterlist[self.attacker].dirtyFighter/DIRTY_SCALE
         
-            if self.clinch:
-                for fighter in self.fighterlist:
-                    # increment arousal from being in clinch
-                    fighter.fightStats.arousal += 1
-                
+            # clinch attacks
+            if self.clinch:                
                 self.problist[0] += 1 # punch
                 self.problist[1] += 1 # break
                 self.problist[2] += 1 # push
@@ -357,7 +383,37 @@ init python:
                 # increment punch and dirty chance by rage
                 self.problist[0] += self.fighterlist[self.attacker].fightstats.rage/RAGE_SCALE
                 self.problist[-1] += self.fighterlist[self.attacker].fightstats.rage/RAGE_SCALE
+
+            # holding attacks
+            elif self.hold:
+                self.problist[0] += 1 # punch
+                self.problist[1] += 1 # break
+                self.problist[2] += 1 # kiss
+                self.problist[3] += 1 # push
+                self.problist[4] += 1 # grab
+                self.problist[5] += 1 # dirty
+                # increment push and break probability by energy diff
+                if self.fighterlist[self.attacker].fightStats.energy > self.fighterlist[defender].fightstats.energymax:
+                    val = self.fighterlist[self.attacker].fightStats.energy - self.fighterlist[self.attacker].fightstats.energymax
+                    self.problist[1] += val/ENERGY_DIFF_MULT
+                    self.problist[3] += val/ENERGY_DIFF_MULT
+                # increment break probability by health diff
+                if self.fighterlist[self.attacker].fightStats.health > self.fighterlist[defender].fightstats.health:
+                    val = self.fighterlist[self.attacker].fightStats.health - self.fighterlist[defender].fightstats.health
+                    self.problist[1] += val/HEALTH_DIFF_MULT
+                # increment kiss chance by arousal
+                self.problist[2] += self.fighterlist[self.attacker].fightstats.arousal/AROUSAL_SCALE
+                # increment punch, grab, and dirty chance by rage
+                self.problist[0] += self.fighterlist[self.attacker].fightstats.rage/RAGE_SCALE
+                self.problist[3] += self.fighterlist[self.attacker].fightstats.rage/RAGE_SCALE
+                self.problist[-1] += self.fighterlist[self.attacker].fightstats.rage/RAGE_SCALE
                 
+                if all(self.grabbing[attacker]):
+                    # attacker has both hands occupied, zero punching and new grab
+                    self.problist[0] = 0
+                    self.problist[4] = 0
+                
+            # normal attacks
             else:
                 # foxy boxer
                 self.problist[0] += 1 # wild sing
@@ -415,7 +471,10 @@ init python:
                     self.problist[7] += self.fighterlist[defender].fightstats.energy  - self.fighterlist[self.attacker].fightStats.energy
                     self.problist[8] -= self.fighterlist[defender].fightstats.energy - self.fighterlist[self.attacker].fightStats.energy            
 
-        def generate_attack():
+
+
+                    
+        def select_attack():
             rollmax = sum(problist)
             roll = renpy.randint(1,rollmax)
             for idx, val in problist:
@@ -425,89 +484,192 @@ init python:
                     
         def get_target(self):
             if self.clinch:
-                if self.attackidx == 0: # clinch punch
-                    targetlist = ["stomach", "back", "lBoob", "rBoob"]
-                elif self.attackidx == 1: # break
-                    targetlist = list()
-                    self.clinch = False
-                    self.breakclinch = True
-                elif self.attackidx == 2: # push
-                    # Cause location to change based on fighter position
-                    targetlist = list()
-                    self.locationupdate = True
-                elif self.attackidx == 3: # titfight
-                    targetlist = ["lBoob", "rBoob"]
-                elif self.attackidx == 4: # kiss
-                    targetlist = list()
-                    for fighter in fighterList:
-                        # increment arousal
-                        fighter.fightStats.arousal += 1
-                elif self.attackidx == 5: # dirty
-                    self.dirtyattack = True
-                    dirtyattacklist = ["pussyknee", "boobgrind", "headbutt"]
-                    roll  = renpy.randint(0, len(dirtyattacklist-1))
-                    if roll == 1: # pussyknee
-                        targetlist = ["pussy"]
-                        roll = 0
-                    elif roll == 2: # boobgrind
-                        targetlist = ["lBoob", "rBoob"]
-                    elif roll == 3: # headbutt
-                        targetlist = ["face"]
-                        
-                    
+                get_clinch_target()
+            elif self.hold:
+                get_hold_target()
             else:
-                if self.attackidx == 0:  # wild swing
-                    targetlist = ["head", "face", "neck", "lArm", "rArm", "lBoob", "rBoob", "stomach", "pussy"]
-                elif self.attackidx == 1:  # jab
-                    targetlist = ["head", "face", "lBoob", "rBoob", "stomach"]
-                elif self.attackidx == 2:  # cross
-                    targetlist = ["head", "face", "lBoob", "rBoob", "stomach"]
-                elif self.attackidx == 3:  # hook
-                    targetlist = ["head", "face", "lBoob", "rBoob", "stomach"]
-                elif self.attackidx == 4:  # uppercut
-                    targetlist = ["head", "face", "lBoob", "rBoob", "stomach"]
-                elif self.attackidx == 5:  # drop
-                    targetlist = ["head", "face", "lBoob", "rBoob"]
-                elif self.attackidx == 6:  # cover up
-                    targetlist = list()
-                    self.defending[self.attacker] = True
-                    
-                elif self.attackidx == 7:  # clinch
-                    targetlist = list()
-                    self.clinch = True
-                elif self.attackidx == 8:  # disengage
-                    targetlist = list()
-                elif self.attackidx == 9:  # dirty
-            
+                get_normal_target()
+
             if len(targetlist):
                 roll  = renpy.randint(0, len(targetlist-1))
                 self.attackresult[1] = targetlist[roll]
             else:
                 self.attackresult[1] = ""
                 
-            if attackresult[1] == ("neck" or "pussy"):
+            if self.attackresult[1] == ("neck" or "pussy"):
                 self.dirtyattack = True
                 
+
+        def get_clinch_target(self):
+            if self.attackidx == 0: # clinch punch
+                targetlist = ["stomach", "back", "lBoob", "rBoob"]
+            elif self.attackidx == 1: # break
+                targetlist = list()
+                self.clinch = False
+                self.breakclinch = True
+            elif self.attackidx == 2: # push
+                # Cause location to change based on fighter position
+                targetlist = list()
+                create_movement(2) # move both
+            elif self.attackidx == 3: # titfight
+                targetlist = ["lBoob", "rBoob"]
+            elif self.attackidx == 4: # kiss
+                targetlist = list()
+                update_arousal(1)
+            elif self.attackidx == 5: # dirty
+                self.dirtyattack = True
+                dirtyattacklist = ["pussyknee", "boobgrind", "headbutt"]
+                roll  = renpy.randint(0, len(dirtyattacklist-1))
+                if roll == 1: # pussyknee
+                    targetlist = ["pussy"]
+                    roll = 0
+                elif roll == 2: # boobgrind
+                    targetlist = ["lBoob", "rBoob"]
+                elif roll == 3: # headbutt
+                    targetlist = ["face"]
+
+            
+        def get_grab_target(self):
+            # attacker has both hands occupied
+            if all(self.grabbing[attacker]):
+                if self.attackidx == 1: # break
+                    self.targetlist = list()
+                    self.grabbing = [[False, False], [False, False]]
+                elif self.attackidx == 2: # kiss
+                    self.targetlist = list()
+                    increment_arousal(1)
+                elif self.attackidx == 3: # push
+                    self.targetlist = ()
+                    create_movement(2)
+                elif self.attackidx == 5: # dirty
+                    self.dirtyattack = True
+                    dirtyattacklist = ["pussyknee", "headbutt", "bite"]
+                    roll  = renpy.randint(0, len(dirtyattacklist-1))
+                    if roll == 0:
+                        targetlist = ["pussy"]
+                    elif roll == 1:
+                        targetlist = ["face"]
+                    elif roll == 2:
+                        targetlist = ["lBoob", "rBoob"]
+            # attacker has one occupied hand
+            elif any(self.grabbing[attacker]):
+                if self.attackidx == 0: # punch
+                    targetlist = ["head", "face", "neck", "lArm", "rArm", "lBoob", "rBoob", "stomach", "pussy"]
+                    for target in self.grabbing[attacker]:
+                        if target:
+                            targetlist.pop(target)                    
+                elif self.attackidx == 1: # break
+                    self.grabbing = [[False, False], [False, False]]
+                elif self.attackidx == 2: # kiss
+                    self.targetlist = list()
+                    increment_arousal(1)                    
+                elif self.attackidx == 3: # push
+                    self.targetlist = list()
+                    generate_movement(2)
+                elif self.attackidx == 4: # squeeze (grab)
+                    for hand in self.grabbing[attacker]:
+                        if hand:
+                            targetlist = [hand]
+                elif self.attackidx == 5: # dirty
+                    self.dirtyattack = True
+                    dirtyattacklist = ["pussyknee", "headbutt", "bite"]
+                    roll  = renpy.randint(0, len(dirtyattacklist-1))
+                    if roll == 0:
+                        targetlist = ["pussy"]
+                    elif roll == 1:
+                        targetlist = ["face"]
+                    elif roll == 2:
+                        targetlist = ["lBoob", "rBoob"]
+            # defender has a hold
+            elif self.grabbing[defender]:
+                if self.attackidx == 0: # punch
+                    targetlist = ["head", "face", "neck", "lArm", "rArm", "lBoob", "rBoob", "stomach", "pussy"]
+                    for target in self.grabbing[attacker]:
+                        if target:
+                            targetlist.pop(target)                    
+                elif self.attackidx == 1: # break
+                    self.grabbing = [[False, False], [False, False]]
+                elif self.attackidx == 2: # kiss
+                    self.targetlist = list()
+                    increment_arousal(1)                    
+                elif self.attackidx == 3: # push
+                    self.targetlist = list()
+                    generate_movement(2)
+                elif self.attackidx == 4: # grab
+                    targetlist = ["head", "lBoob", "rBoob", "pussy"]
+                elif self.attackidx == 5: # dirty
+                    self.dirtyattack = True
+                    dirtyattacklist = ["pussyknee", "headbutt", "bite"]
+                    roll  = renpy.randint(0, len(dirtyattacklist-1))
+                    if roll == 0:
+                        targetlist = ["pussy"]
+                    elif roll == 1:
+                        targetlist = ["face"]
+                    elif roll == 2:
+                        targetlist = ["lBoob", "rBoob"]
+            else:
+                # no current holds
+                targetlist = ["head", "lBoob", "rBoob", "pussy"]
+
+            
+        def get_normal_target(self):
+            if self.attackidx == 0:  # wild swing
+                targetlist = ["head", "face", "neck", "lArm", "rArm", "lBoob", "rBoob", "stomach", "pussy"]
+            elif self.attackidx == 1:  # jab
+                targetlist = ["head", "face", "lBoob", "rBoob", "stomach"]
+            elif self.attackidx == 2:  # cross
+                targetlist = ["head", "face", "lBoob", "rBoob", "stomach"]
+            elif self.attackidx == 3:  # hook
+                targetlist = ["head", "face", "lBoob", "rBoob", "stomach"]
+            elif self.attackidx == 4:  # uppercut
+                targetlist = ["head", "face", "lBoob", "rBoob", "stomach"]
+            elif self.attackidx == 5:  # drop
+                targetlist = ["head", "face", "lBoob", "rBoob"]
+            elif self.attackidx == 6:  # cover up
+                targetlist = list()
+                self.defending[self.attacker] = True
+            elif self.attackidx == 7:  # clinch
+                targetlist = list()
+                self.clinch = True
+            elif self.attackidx == 8:  # disengage
+                targetlist = list()
+                create_movement(self.defender)                        
+                
+            elif self.attackidx == 9:  # dirty
+                dirtyattacklist = ["knee", "kick", "grind", "headbutt", "bite"]
+                if self.rules > 1:
+                    dirtyattacklist.append(grab)
+                roll  = renpy.randint(0, len(dirtyattacklist-1))
+
+
         def get_counter(self):
             A = 1
             
             
         def calculate_damage(self):
+            if self.clinch:
+                # increment arousal from being in clinch
+                increment_arousal(1)
+                                     
             damage = 0
-            # max damage = mod strength + mod skill + fight damage mod - attacker average pain
-            maxdamage = fighterlist[self.attacker].stats.strength/STRENGTH_TO_DAMAGE + getattr(self.fighterlist[self.attacker].fighterData, self.fighttype).skill/SKILL_TO_DAMAGE + self.damagemod - self.fighterlist[self.attacker].fightStats.averagePain)
-            if maxdamage > 1:
-                damage += renpy.randint(1, maxdamage)
+            # max damage = mod strength + mod skill + fight damage mod - attacker average pain - tiredness mod
+            self.maxdamage = fighterlist[self.attacker].stats.strength/STRENGTH_TO_DAMAGE + getattr(self.fighterlist[self.attacker].fighterData, self.fighttype).skill/SKILL_TO_DAMAGE + self.damagemod - self.fighterlist[self.attacker].fightStats.averagePain - (self.fighterlist[self.attacker].fightstats.energymax-self.fighterlist[self.attacker].fightStats.energy)/ENERGY_DROP_MULT
+            if self.maxdamage > 1:
+                damage += renpy.randint(1, self.maxdamage)
             else:
                 damage += 1
                 
             if self.dirtyattack:
                 damage += self.dirtydamage
+                self.maxdamage += self.dirtydamage
                 
             if self.defending[self.defender]:
                 # if defender is defending reduce damage by mod skill
                 damage -= getattr(self.fighterList[defender].fighterData, self.fighttype).skill/SKILL_TO_DAMAGE
                 
+            # increment damage by injury level
+            if getattr(self.fighterlist[self.defender].stats.injury, self.attackresult[1]) > 0:
+                damage += getattr(self.fighterlist[self.defender].stats.injury, self.attackresult[1])
             self.attackresult[2] = damage
             
             
@@ -527,16 +689,36 @@ init python:
                 
         def cleanup_round(self):
             A = 1
+
+
         def generate_text(self):
             A = 1
         
         
-        def update_strip_level():
+        def update_strip_level(self):
+            
+            
+        def create_movement(self, mover):
+            dir = (0,0,0)
+            while not any(dir):
+                dir[0] = renpy.randint(-1,1)
+                dir[1] = renpy.randint(-1,1)
+            self.move = [mover, dir[0], dir[1]]
+            
             
         def do_finish(self):
 
         def update_position(self):
-             
+            if self.move[0] == 2:
+                # both move
+            else:
+                # one moves
+
+        def update_arousal(self, val):
+            for fighter in fighterList:
+                # increment arousal
+                fighter.fightStats.arousal += val
+            
             
     class TitfightModule:
         def __init__(self, fighter1, fighter2, fightattire, rules,  location):

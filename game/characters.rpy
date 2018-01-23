@@ -51,7 +51,7 @@ init python:
             for key, val in self.pain.__dict__.iteritems():
                 total += val
                 k += 1
-           return total/float(k)
+            return total/float(k)
             
     class FighterData:
          def __init__(self, fighttypes):
@@ -134,7 +134,7 @@ init python:
         def __init__(self, id, fname, lname, sex, charList, fighttypes):
             self.id = id
             if id == 0:
-                self.gameEvents = cl_gameEvents()
+                self.gameEvents = GameEvents()
                 self.gameEvents.setGameEvents()
 
             self.active = True
