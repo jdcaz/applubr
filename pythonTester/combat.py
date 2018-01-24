@@ -67,10 +67,12 @@ class FightModule:
             self.audenergy += fighter.stats.fame
 
         self.rules = rules
-
+        self.initiative = ()
         self.sexlevel = 0
         self.fightattire = fightattire
+        self.dirtylevel = 0
         self.set_fight_dirty_level()
+        self.striplevel = 0
         self.set_strip_level()
 
         if fighttype == "Catfight":
@@ -91,6 +93,8 @@ class FightModule:
     def set_strip_level(self):
         if self.fightattire == "Normal" or self.fightattire == "Underwear":
             self.striplevel = 0
+            # 0 - everything on
+            # 0.5 - top on, bottom off
         elif self.fightattire == "Normal, topless" or self.fightattire == "Underwear, topless":
             self.striplevel = 1
         else:
@@ -163,7 +167,7 @@ class FightModule:
             # fighter 1 attacks, initiative becomes attack bonus
             self.initiative = (0, roll)
         else:
-        # fighter 2 attacks
+            # fighter 2 attacks
             self.initiative = (1, roll - initlist[0])
 
     def calculate_damage(self):
@@ -211,7 +215,6 @@ class FightModule:
         if self.fightModule.incrementsexlevel:
             self.sexlevel += 1
 
-
     def change_fight_type(self):
         # fight devolves towards sexfight or catfight (or combination)
         if self.dirtylevel >= 3:
@@ -219,15 +222,12 @@ class FightModule:
         if self.sexlevel >= 3:
             self.fightModule = SexfightModule(self.fighterlist, self.fightattire, self.rules, self.location)
 
-
     def eval_audience_reaction(self):
         # audience high momentum, reversals, ...
         self.audenergy = 0
 
-
     def do_face_off(self):
         self.fightModule.face_off()
-
 
     def run_turn(self):
         self.calculate_initiative()
@@ -240,10 +240,8 @@ class FightModule:
         self.eval_audience_reaction()
         self.display_fight_text()
 
-
     def do_finish(self):
         self.fightModule.do_finish()
-
 
     def display_fight_text(self):
         A = 1
@@ -288,6 +286,8 @@ class BoxingModule:
         self.dirtymax = BOXING_DIRTY_MAX
 
         self.counter = False
+        self.block = False
+        self.dodge = False
 
         self.attackresult = [0, "", 0, 0,0]  # target fighter, body part, damage, attacker energy drain, target energy drain
         self.counterattackresult = [0, "", 0, 0,0]  # target fighter, body part, damage, attacker energy drain, target energy drain
@@ -303,7 +303,6 @@ class BoxingModule:
         self.attacklist = list()
         self.problist = list()
         self.attackidx = 0
-
 
     def parse_rules(self, rules):
         # Boxing
@@ -322,10 +321,8 @@ class BoxingModule:
             self.damagemod = 0
             self.dirtymod = 2
 
-
     def face_off(self):
         self.fighterlist
-
 
     def run_turn(self, initiative):
         self.initiative = initiative
@@ -333,7 +330,9 @@ class BoxingModule:
         self.attackbonus = self.initiative[1]
         self.breakclinch = False
         self.breakhold = False
-        self.knockdown = False
+        self.knockdown = [0,0]
+        self.dodge = False
+        self.block = False
 
         for hands in self.grabbing:
             if any(hands):
@@ -351,8 +350,9 @@ class BoxingModule:
             self.move_to_opponent()  # FIXME: need to create
             self.momentumchamge = -1 * self.momentummult
 
-        self.calculate_damage()
-        self.calculate_knockdown()
+        if not self.block and not self.dodge:
+            self.calculate_damage()
+            self.calculate_knockdown()
         if not self.knockdown:
             self.calculate_knockback()
         if self.updatelocation:
@@ -366,7 +366,6 @@ class BoxingModule:
         self.cleanup_round()
         self.generate_text()
 
-
     def set_attacker(self):
         self.attacker = self.initiative[0]  # position in fighterlist of attacker
         self.defender = int(not self.initiative[0])  # position in fighterlist of defender
@@ -377,7 +376,6 @@ class BoxingModule:
         if self.initiative[0] == 1:
             # momentum positive for fighter 1, negative for 2
             self.momentmult = -1
-
 
     def populate_prob_list(self):
         if self.clinch:
@@ -698,36 +696,38 @@ class BoxingModule:
             if roll < 4:
                 # dodge
                 if self.clinch:
-                    A = 1
+                    self.breakclinch = True
                 elif self.hold:
-                    A = 1
+                    self.breakhold = True
                 else:
-                    A = 1
+                    self.dodge = True
             elif roll < 7:
                 # block
                 if self.clinch:
-                    A = 1
+                    self.breakclinch = True
                 elif self.hold:
-                    A = 1
+                    self.breakhold = True
                 else:
-                    A = 1
+                    self.block = True
             elif roll < 9:
                 # counter
                 if self.clinch:
-                    A = 1
+                    self.counter_clinch()
                 elif self.hold:
-                    A = 1
+                    self.counter_hold()
                 else:
-                    A = 1
+                    self.counter_hit()
             else:
                 # dodge and counter
                 if self.clinch:
-                    A = 1
+                    self.breakclinch = True
+                    self.counter_hit()
                 elif self.hold:
-                    A = 1
+                    self.breakhold = True
+                    self.counter_hit()
                 else:
-                    A = 1
-
+                    self.dodge = True
+                    self.counter_hit()
 
     def calculate_damage(self):
         if self.clinch:
@@ -759,7 +759,6 @@ class BoxingModule:
             damage += getattr(self.fighterlist[self.defender].stats.injury, self.attackresult[1])
         self.attackresult[2] = damage
 
-
     def calculate_knockdown(self):
         if self.attackresult[2] > self.fighterlist[self.defender].fightStats.health/HEALTH_TO_KNOCKDOWN:
             # TODO: Knockdown logic
@@ -787,14 +786,15 @@ class BoxingModule:
                 # the dirtier the fight gets, the more it takes to make it dirtier
                 self.dirtylevel += 1
 
-
     def cleanup_round(self):
-        True
+        self.fghtModule.dodge = False
+        self.fghtModule.block = False
+        self.fghtModule.knockdown = [0,0]
 
+        True
 
     def generate_text(self):
         True
-
 
     def update_strip_level(self):
         True
@@ -805,7 +805,6 @@ class BoxingModule:
             dir[0] = random.randint(-1, 1)
             dir[1] = random.randint(-1, 1)
         self.move = [mover, dir[0], dir[1]]
-
 
     def do_finish(self):
         True
